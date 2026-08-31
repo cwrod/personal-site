@@ -157,6 +157,11 @@ body {
   margin-bottom: 0;
 }
 
+.stub-panel a {
+  color: inherit;
+  text-decoration: underline;
+}
+
 .ribbon {
   position: relative;
   z-index: 1;
