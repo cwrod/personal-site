@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 28" fill="none" stroke="#ffffff">
+  <title>Switch</title>
+  <rect x="3.4" y="20.1" width="13.2" height="6.8" rx="0.45" stroke-width="0.45"/>
+  <circle cx="5.3" cy="21.7" r="0.55" stroke-width="0.3"/>
+  <circle cx="14.7" cy="21.7" r="0.55" stroke-width="0.3"/>
+  <circle cx="5.3" cy="25.3" r="0.55" stroke-width="0.3"/>
+  <circle cx="14.7" cy="25.3" r="0.55" stroke-width="0.3"/>
+  <rect x="7.7" y="18.35" width="4.6" height="2" stroke-width="0.4"/>
+  <line x1="8" y1="19" x2="12" y2="19" stroke-width="0.25"/>
+  <line x1="8" y1="19.7" x2="12" y2="19.7" stroke-width="0.25"/>
+  <g class="paddle-off" transform="rotate(-36 10 19.3)">
+    <path d="M10 19.1L8.58 13.9C8.18 12.2 8.78 11.08 10 11.08C11.23 11.08 11.83 12.2 11.43 13.9Z" fill="transparent" stroke-width="0.5" stroke-linejoin="round"/>
+    <circle cx="10" cy="12.38" r="0.6" stroke-width="0.3"/>
+  </g>
+  <g class="paddle-on" transform="rotate(36 10 19.3)" display="none">
+    <path d="M10 19.1L8.58 13.9C8.18 12.2 8.78 11.08 10 11.08C11.23 11.08 11.83 12.2 11.43 13.9Z" fill="transparent" stroke-width="0.5" stroke-linejoin="round"/>
+    <circle cx="10" cy="12.38" r="0.6" stroke-width="0.3"/>
+  </g>
+</svg>

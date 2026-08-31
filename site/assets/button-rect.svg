@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 14" fill="none" stroke="#ffffff">
+  <title>Bar button</title>
+  <rect x="1.2" y="1.2" width="19.6" height="11.6" rx="0.5" stroke-width="0.45"/>
+  <circle cx="3.1" cy="3.1" r="0.5" stroke-width="0.28"/>
+  <circle cx="18.9" cy="3.1" r="0.5" stroke-width="0.28"/>
+  <circle cx="3.1" cy="10.9" r="0.5" stroke-width="0.28"/>
+  <circle cx="18.9" cy="10.9" r="0.5" stroke-width="0.28"/>
+  <rect x="3.3" y="3.6" width="15.4" height="6.8" rx="1.6" stroke-width="0.4"/>
+  <rect class="face" x="4.5" y="4.55" width="13" height="4.9" rx="1.2" stroke-width="0.4"/>
+</svg>

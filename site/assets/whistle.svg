@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 29" fill="none" stroke="#ffffff">
+  <title>Whistle</title>
+  <g class="steam">
+    <path class="puff-a" stroke-width="0.4" stroke-linecap="round"/>
+    <path class="puff-b" stroke-width="0.4" stroke-linecap="round"/>
+    <path class="puff-c" stroke-width="0.35" stroke-linecap="round"/>
+    <path class="puff-d" stroke-width="0.35" stroke-linecap="round"/>
+    <path class="puff-e" stroke-width="0.3" stroke-linecap="round"/>
+  </g>
+  <path d="M2.8 8.3L8 1.5L13.2 8.3Z" stroke-width="0.45" stroke-linejoin="round"/>
+  <path d="M4.7 8.3H11.3V9.5C9.45 10.7 9.45 13.7 11.3 14.9V20.4H4.7Z" stroke-width="0.45" stroke-linejoin="round"/>
+  <rect x="6.25" y="20.4" width="3.5" height="3.4" stroke-width="0.4"/>
+  <rect x="4.2" y="23.8" width="7.6" height="2.6" rx="0.25" stroke-width="0.4"/>
+  <circle class="eye" cx="8" cy="27.5" r="0.7" stroke-width="0.35"/>
+</svg>

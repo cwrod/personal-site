@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 34" fill="none" stroke="#ffffff">
+  <title>Mixer</title>
+  <rect x="1.2" y="1.2" width="45.6" height="31.6" rx="0.5" stroke-width="0.45"/>
+  <circle cx="3.1" cy="3.1" r="0.5" stroke-width="0.3"/>
+  <circle cx="44.9" cy="3.1" r="0.5" stroke-width="0.3"/>
+  <circle cx="3.1" cy="30.9" r="0.5" stroke-width="0.3"/>
+  <circle cx="44.9" cy="30.9" r="0.5" stroke-width="0.3"/>
+  <g class="fader" data-channel="1">
+    <circle cx="8" cy="4.4" r="1.15" stroke-width="0.35"/>
+    <line x1="8" y1="3.25" x2="8" y2="4.4" stroke-width="0.3"/>
+    <line class="track" x1="8" y1="6.4" x2="8" y2="29.2" stroke-width="0.4"/>
+    <line x1="6.7" y1="6.4" x2="9.3" y2="6.4" stroke-width="0.28"/>
+    <line x1="6.7" y1="29.2" x2="9.3" y2="29.2" stroke-width="0.28"/>
+    <line x1="7.2" y1="12" x2="8.8" y2="12" stroke-width="0.22"/>
+    <line x1="7.2" y1="17.8" x2="8.8" y2="17.8" stroke-width="0.22"/>
+    <line x1="7.2" y1="23.6" x2="8.8" y2="23.6" stroke-width="0.22"/>
+    <rect class="cap" x="5.7" y="16.6" width="4.6" height="2.4" stroke-width="0.4"/>
+  </g>
+  <g class="fader" data-channel="2">
+    <circle cx="18.7" cy="4.4" r="1.15" stroke-width="0.35"/>
+    <line x1="18.7" y1="3.25" x2="18.7" y2="4.4" stroke-width="0.3"/>
+    <line class="track" x1="18.7" y1="6.4" x2="18.7" y2="29.2" stroke-width="0.4"/>
+    <line x1="17.4" y1="6.4" x2="20" y2="6.4" stroke-width="0.28"/>
+    <line x1="17.4" y1="29.2" x2="20" y2="29.2" stroke-width="0.28"/>
+    <line x1="17.9" y1="12" x2="19.5" y2="12" stroke-width="0.22"/>
+    <line x1="17.9" y1="17.8" x2="19.5" y2="17.8" stroke-width="0.22"/>
+    <line x1="17.9" y1="23.6" x2="19.5" y2="23.6" stroke-width="0.22"/>
+    <rect class="cap" x="16.4" y="10.2" width="4.6" height="2.4" stroke-width="0.4"/>
+  </g>
+  <g class="fader" data-channel="3">
+    <circle cx="29.3" cy="4.4" r="1.15" stroke-width="0.35"/>
+    <line x1="29.3" y1="3.25" x2="29.3" y2="4.4" stroke-width="0.3"/>
+    <line class="track" x1="29.3" y1="6.4" x2="29.3" y2="29.2" stroke-width="0.4"/>
+    <line x1="28" y1="6.4" x2="30.6" y2="6.4" stroke-width="0.28"/>
+    <line x1="28" y1="29.2" x2="30.6" y2="29.2" stroke-width="0.28"/>
+    <line x1="28.5" y1="12" x2="30.1" y2="12" stroke-width="0.22"/>
+    <line x1="28.5" y1="17.8" x2="30.1" y2="17.8" stroke-width="0.22"/>
+    <line x1="28.5" y1="23.6" x2="30.1" y2="23.6" stroke-width="0.22"/>
+    <rect class="cap" x="27" y="15.4" width="4.6" height="2.4" stroke-width="0.4"/>
+  </g>
+  <g class="fader" data-channel="4">
+    <circle cx="40" cy="4.4" r="1.15" stroke-width="0.35"/>
+    <line x1="40" y1="3.25" x2="40" y2="4.4" stroke-width="0.3"/>
+    <line class="track" x1="40" y1="6.4" x2="40" y2="29.2" stroke-width="0.4"/>
+    <line x1="38.7" y1="6.4" x2="41.3" y2="6.4" stroke-width="0.28"/>
+    <line x1="38.7" y1="29.2" x2="41.3" y2="29.2" stroke-width="0.28"/>
+    <line x1="39.2" y1="12" x2="40.8" y2="12" stroke-width="0.22"/>
+    <line x1="39.2" y1="17.8" x2="40.8" y2="17.8" stroke-width="0.22"/>
+    <line x1="39.2" y1="23.6" x2="40.8" y2="23.6" stroke-width="0.22"/>
+    <rect class="cap" x="37.7" y="8.8" width="4.6" height="2.4" stroke-width="0.4"/>
+  </g>
+</svg>

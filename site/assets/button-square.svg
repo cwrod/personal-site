@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="#ffffff">
+  <title>Square button</title>
+  <rect x="1.2" y="1.2" width="13.6" height="13.6" rx="0.5" stroke-width="0.45"/>
+  <circle cx="3.15" cy="3.15" r="0.55" stroke-width="0.3"/>
+  <circle cx="12.85" cy="3.15" r="0.55" stroke-width="0.3"/>
+  <circle cx="3.15" cy="12.85" r="0.55" stroke-width="0.3"/>
+  <circle cx="12.85" cy="12.85" r="0.55" stroke-width="0.3"/>
+  <rect x="3.4" y="3.4" width="9.2" height="9.2" rx="0.35" stroke-width="0.4"/>
+  <rect x="4.55" y="4.55" width="6.9" height="6.9" rx="0.25" stroke-width="0.3"/>
+  <rect class="face" x="5.55" y="5.55" width="4.9" height="4.9" rx="0.2" stroke-width="0.45"/>
+</svg>

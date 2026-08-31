@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 105.2 26" fill="none" stroke="#ffffff">
+  <title>Keyboard</title>
+  <rect x="1.2" y="1.2" width="102.8" height="23.6" rx="0.45" stroke-width="0.4"/>
+  <g class="keys">
+    <path class="key white" fill="transparent" stroke="none" data-midi="60" d="M2.2 22.6H9.4V14.2H7.25V2.4H2.2Z"/>
+    <path class="key white" fill="transparent" stroke="none" data-midi="62" d="M9.4 22.6H16.6V14.2H14.45V2.4H11.55V14.2H9.4Z"/>
+    <path class="key white" fill="transparent" stroke="none" data-midi="64" d="M16.6 22.6H23.8V2.4H18.75V14.2H16.6Z"/>
+    <path class="key white" fill="transparent" stroke="none" data-midi="65" d="M23.8 22.6H31V14.2H28.85V2.4H23.8Z"/>
+    <path class="key white" fill="transparent" stroke="none" data-midi="67" d="M31 22.6H38.2V14.2H36.05V2.4H33.15V14.2H31Z"/>
+    <path class="key white" fill="transparent" stroke="none" data-midi="69" d="M38.2 22.6H45.4V14.2H43.25V2.4H40.35V14.2H38.2Z"/>
+    <path class="key white" fill="transparent" stroke="none" data-midi="71" d="M45.4 22.6H52.6V2.4H47.55V14.2H45.4Z"/>
+    <path class="key white" fill="transparent" stroke="none" data-midi="72" d="M52.6 22.6H59.8V14.2H57.65V2.4H52.6Z"/>
+    <path class="key white" fill="transparent" stroke="none" data-midi="74" d="M59.8 22.6H67V14.2H64.85V2.4H61.95V14.2H59.8Z"/>
+    <path class="key white" fill="transparent" stroke="none" data-midi="76" d="M67 22.6H74.2V2.4H69.15V14.2H67Z"/>
+    <path class="key white" fill="transparent" stroke="none" data-midi="77" d="M74.2 22.6H81.4V14.2H79.25V2.4H74.2Z"/>
+    <path class="key white" fill="transparent" stroke="none" data-midi="79" d="M81.4 22.6H88.6V14.2H86.45V2.4H83.55V14.2H81.4Z"/>
+    <path class="key white" fill="transparent" stroke="none" data-midi="81" d="M88.6 22.6H95.8V14.2H93.65V2.4H90.75V14.2H88.6Z"/>
+    <path class="key white" fill="transparent" stroke="none" data-midi="83" d="M95.8 22.6H103V2.4H97.95V14.2H95.8Z"/>
+    <rect class="key black" fill="transparent" stroke="none" data-midi="61" x="7.25" y="2.4" width="4.3" height="11.8"/>
+    <rect class="key black" fill="transparent" stroke="none" data-midi="63" x="14.45" y="2.4" width="4.3" height="11.8"/>
+    <rect class="key black" fill="transparent" stroke="none" data-midi="66" x="28.85" y="2.4" width="4.3" height="11.8"/>
+    <rect class="key black" fill="transparent" stroke="none" data-midi="68" x="36.05" y="2.4" width="4.3" height="11.8"/>
+    <rect class="key black" fill="transparent" stroke="none" data-midi="70" x="43.25" y="2.4" width="4.3" height="11.8"/>
+    <rect class="key black" fill="transparent" stroke="none" data-midi="73" x="57.65" y="2.4" width="4.3" height="11.8"/>
+    <rect class="key black" fill="transparent" stroke="none" data-midi="75" x="64.85" y="2.4" width="4.3" height="11.8"/>
+    <rect class="key black" fill="transparent" stroke="none" data-midi="78" x="79.25" y="2.4" width="4.3" height="11.8"/>
+    <rect class="key black" fill="transparent" stroke="none" data-midi="80" x="86.45" y="2.4" width="4.3" height="11.8"/>
+    <rect class="key black" fill="transparent" stroke="none" data-midi="82" x="93.65" y="2.4" width="4.3" height="11.8"/>
+  </g>
+  <g class="key-lines" pointer-events="none">
+    <line x1="2.2" y1="2.4" x2="103" y2="2.4" stroke-width="0.35"/>
+    <line x1="2.2" y1="22.6" x2="103" y2="22.6" stroke-width="0.35"/>
+    <line x1="2.2" y1="2.4" x2="2.2" y2="22.6" stroke-width="0.35"/>
+    <line x1="103" y1="2.4" x2="103" y2="22.6" stroke-width="0.35"/>
+    <line x1="9.4" y1="14.2" x2="9.4" y2="22.6" stroke-width="0.35"/>
+    <line x1="16.6" y1="14.2" x2="16.6" y2="22.6" stroke-width="0.35"/>
+    <line x1="23.8" y1="2.4" x2="23.8" y2="22.6" stroke-width="0.35"/>
+    <line x1="31" y1="14.2" x2="31" y2="22.6" stroke-width="0.35"/>
+    <line x1="38.2" y1="14.2" x2="38.2" y2="22.6" stroke-width="0.35"/>
+    <line x1="45.4" y1="14.2" x2="45.4" y2="22.6" stroke-width="0.35"/>
+    <line x1="52.6" y1="2.4" x2="52.6" y2="22.6" stroke-width="0.35"/>
+    <line x1="59.8" y1="14.2" x2="59.8" y2="22.6" stroke-width="0.35"/>
+    <line x1="67" y1="14.2" x2="67" y2="22.6" stroke-width="0.35"/>
+    <line x1="74.2" y1="2.4" x2="74.2" y2="22.6" stroke-width="0.35"/>
+    <line x1="81.4" y1="14.2" x2="81.4" y2="22.6" stroke-width="0.35"/>
+    <line x1="88.6" y1="14.2" x2="88.6" y2="22.6" stroke-width="0.35"/>
+    <line x1="95.8" y1="14.2" x2="95.8" y2="22.6" stroke-width="0.35"/>
+    <line x1="7.25" y1="2.4" x2="7.25" y2="14.2" stroke-width="0.35"/>
+    <line x1="11.55" y1="2.4" x2="11.55" y2="14.2" stroke-width="0.35"/>
+    <line x1="7.25" y1="14.2" x2="11.55" y2="14.2" stroke-width="0.35"/>
+    <line x1="14.45" y1="2.4" x2="14.45" y2="14.2" stroke-width="0.35"/>
+    <line x1="18.75" y1="2.4" x2="18.75" y2="14.2" stroke-width="0.35"/>
+    <line x1="14.45" y1="14.2" x2="18.75" y2="14.2" stroke-width="0.35"/>
+    <line x1="28.85" y1="2.4" x2="28.85" y2="14.2" stroke-width="0.35"/>
+    <line x1="33.15" y1="2.4" x2="33.15" y2="14.2" stroke-width="0.35"/>
+    <line x1="28.85" y1="14.2" x2="33.15" y2="14.2" stroke-width="0.35"/>
+    <line x1="36.05" y1="2.4" x2="36.05" y2="14.2" stroke-width="0.35"/>
+    <line x1="40.35" y1="2.4" x2="40.35" y2="14.2" stroke-width="0.35"/>
+    <line x1="36.05" y1="14.2" x2="40.35" y2="14.2" stroke-width="0.35"/>
+    <line x1="43.25" y1="2.4" x2="43.25" y2="14.2" stroke-width="0.35"/>
+    <line x1="47.55" y1="2.4" x2="47.55" y2="14.2" stroke-width="0.35"/>
+    <line x1="43.25" y1="14.2" x2="47.55" y2="14.2" stroke-width="0.35"/>
+    <line x1="57.65" y1="2.4" x2="57.65" y2="14.2" stroke-width="0.35"/>
+    <line x1="61.95" y1="2.4" x2="61.95" y2="14.2" stroke-width="0.35"/>
+    <line x1="57.65" y1="14.2" x2="61.95" y2="14.2" stroke-width="0.35"/>
+    <line x1="64.85" y1="2.4" x2="64.85" y2="14.2" stroke-width="0.35"/>
+    <line x1="69.15" y1="2.4" x2="69.15" y2="14.2" stroke-width="0.35"/>
+    <line x1="64.85" y1="14.2" x2="69.15" y2="14.2" stroke-width="0.35"/>
+    <line x1="79.25" y1="2.4" x2="79.25" y2="14.2" stroke-width="0.35"/>
+    <line x1="83.55" y1="2.4" x2="83.55" y2="14.2" stroke-width="0.35"/>
+    <line x1="79.25" y1="14.2" x2="83.55" y2="14.2" stroke-width="0.35"/>
+    <line x1="86.45" y1="2.4" x2="86.45" y2="14.2" stroke-width="0.35"/>
+    <line x1="90.75" y1="2.4" x2="90.75" y2="14.2" stroke-width="0.35"/>
+    <line x1="86.45" y1="14.2" x2="90.75" y2="14.2" stroke-width="0.35"/>
+    <line x1="93.65" y1="2.4" x2="93.65" y2="14.2" stroke-width="0.35"/>
+    <line x1="97.95" y1="2.4" x2="97.95" y2="14.2" stroke-width="0.35"/>
+    <line x1="93.65" y1="14.2" x2="97.95" y2="14.2" stroke-width="0.35"/>
+  </g>
+</svg>

@@ -1,0 +1,564 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #062406;
+  --panel: #000000;
+  --slot: #031203;
+  --text: #ffffff;
+  --line: #f4fff4;
+  --px-on: #ffffff;
+  --px-off: #6e6e6e;
+  --pixel: 1px;
+  --ribbon-left: 276px;
+  --ribbon-right: 302px;
+}
+
+html {
+  overflow-x: auto;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  min-width: calc(var(--ribbon-right) * 4);
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: stretch;
+  overflow-x: auto;
+  padding: clamp(16px, 4vw, 48px);
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Bitcount Grid Single", "Courier New", Courier, monospace;
+  letter-spacing: 0.03em;
+}
+
+.scanlines,
+.pixel-grid {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+}
+
+.scanlines {
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.18) 0,
+    rgba(0, 0, 0, 0.18) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  z-index: 2;
+}
+
+.pixel-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 8px 8px;
+  z-index: 1;
+}
+
+.page {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: clamp(16px, 2.4vw, 36px);
+  width: min(1480px, 100%);
+  min-width: calc(var(--ribbon-right) * 3);
+}
+
+.page-feeds {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.cabinet {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 auto;
+  width: min(920px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  padding: clamp(16px, 3vw, 28px);
+}
+
+.name-panel {
+  padding: clamp(10px, 2vw, 18px);
+}
+
+.comp.keyboard {
+  width: 154px;
+  cursor: default;
+}
+
+.keyboard .key {
+  cursor: pointer;
+  pointer-events: all;
+  fill: transparent;
+  stroke: none;
+}
+
+.keyboard .key.down {
+  fill: #ffffff;
+}
+
+.led-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--led-cols), minmax(0, 1fr));
+  gap: clamp(1px, 0.22vw, 3px);
+  width: 100%;
+}
+
+.px {
+  width: 100%;
+  aspect-ratio: 1;
+  background: var(--px-off);
+}
+
+.px.on {
+  background: var(--px-on);
+}
+
+.stub-panel {
+  text-align: left;
+}
+
+.stub-panel p {
+  margin: 0 0 1.15em;
+  color: var(--text);
+  font-size: clamp(14px, 1.85vw, 17px);
+  line-height: 1.6;
+}
+
+.stub-panel p:last-child {
+  margin-bottom: 0;
+}
+
+.ribbon {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  width: auto;
+  user-select: none;
+}
+
+.circuit-board {
+  position: relative;
+  height: 100%;
+}
+
+.circuit {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  min-height: 420px;
+}
+
+.circuit .comp {
+  position: absolute;
+  z-index: 1;
+}
+
+.circuit-board > .traces {
+  position: absolute;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.comp {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  color: inherit;
+  cursor: pointer;
+  display: block;
+  touch-action: none;
+}
+
+.comp.button {
+  width: 25px;
+}
+
+.comp.button-wide {
+  width: 38px;
+}
+
+.comp.switch {
+  width: 48px;
+}
+
+.comp.switch-slide {
+  width: 53px;
+}
+
+.comp.switch-rocker {
+  width: 45px;
+}
+
+.comp.scope {
+  width: 43px;
+}
+
+.comp.plasma {
+  width: 55px;
+  cursor: pointer;
+}
+
+.plasma .bolt {
+  pointer-events: none;
+  opacity: 0.62;
+}
+
+.plasma.touching .bolt {
+  opacity: 1;
+}
+
+.plasma.touching .electrode {
+  fill: #ffffff;
+}
+
+.comp.seismo {
+  width: 65px;
+}
+
+.seismo .trace,
+.seismo .pen {
+  pointer-events: none;
+}
+
+.comp.simon {
+  width: 90px;
+  cursor: default;
+}
+
+.simon .pad,
+.simon .play {
+  cursor: pointer;
+  fill: transparent;
+}
+
+.simon .pad.on,
+.simon .play.on {
+  fill: #ffffff;
+}
+
+.simon .play.on path {
+  fill: transparent;
+}
+
+.simon .hi,
+.simon .hi-label {
+  font-family: "Press Start 2P", "Courier New", Courier, monospace;
+  pointer-events: none;
+}
+
+.seismo.shaking {
+  animation: seismo-shake 0.7s steps(2, end);
+}
+
+@keyframes seismo-shake {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  10% {
+    transform: translate(-2px, 1px) rotate(-1.4deg);
+  }
+  22% {
+    transform: translate(2px, -1px) rotate(1.2deg);
+  }
+  36% {
+    transform: translate(-2px, -1px) rotate(-0.8deg);
+  }
+  50% {
+    transform: translate(2px, 1px) rotate(1deg);
+  }
+  64% {
+    transform: translate(-1px, 2px) rotate(-0.6deg);
+  }
+  78% {
+    transform: translate(1px, -2px) rotate(0.5deg);
+  }
+}
+
+.comp.dial {
+  width: 50px;
+  cursor: default;
+  pointer-events: none;
+}
+
+.comp.dial-vu {
+  width: 65px;
+}
+
+.comp.dial-temp {
+  width: 45px;
+}
+
+.comp.hanoi {
+  width: 80px;
+  cursor: default;
+}
+
+.hanoi .disk {
+  fill: #ffffff;
+  cursor: grab;
+}
+
+.hanoi.dragging .disk {
+  cursor: grabbing;
+}
+
+.hanoi .lamp {
+  fill: none;
+}
+
+.hanoi.solved .lamp {
+  fill: #ffffff;
+}
+
+.comp.alarm {
+  width: 68px;
+  cursor: default;
+}
+
+.comp.alarm svg {
+  overflow: visible;
+}
+
+.alarm .lever {
+  pointer-events: none;
+  fill: transparent;
+}
+
+.alarm.broken .lever {
+  pointer-events: all;
+  cursor: ns-resize;
+}
+
+.alarm.broken .glass {
+  display: none;
+}
+
+.alarm .beam {
+  opacity: 0;
+}
+
+.alarm.latched .beam {
+  opacity: 0.92;
+}
+
+.alarm.latched .beam.dim {
+  opacity: 0.28;
+}
+
+.alarm .rotor,
+.alarm .beam {
+  pointer-events: none;
+}
+
+.alarm .plate {
+  font-family: "Press Start 2P", "Courier New", Courier, monospace;
+  pointer-events: none;
+}
+
+.comp.whistle {
+  width: 35px;
+}
+
+.comp.mixer {
+  width: 80px;
+  cursor: default;
+}
+
+.mixer .cap {
+  cursor: ns-resize;
+  fill: #ffffff;
+}
+
+.comp.rgb {
+  width: 150px;
+  cursor: default;
+}
+
+.rgb .cap {
+  cursor: ew-resize;
+  fill: #ffffff;
+}
+
+.rgb .rgb-label {
+  font-family: "Bitcount Grid Single", "Courier New", Courier, monospace;
+  font-size: 5.2px;
+  fill: #ffffff;
+  stroke: none;
+}
+
+.comp.tank {
+  width: 78px;
+  cursor: pointer;
+}
+
+.tank .fish {
+  pointer-events: none;
+}
+
+.comp.galton {
+  width: 73px;
+  cursor: default;
+}
+
+.galton .ball {
+  cursor: grab;
+}
+
+.galton.dragging .ball {
+  cursor: grabbing;
+}
+
+.galton .bin.lit {
+  fill: #ffffff;
+}
+
+.galton .bin {
+  fill: none;
+}
+
+.comp.whistle svg {
+  overflow: visible;
+}
+
+.whistle .steam {
+  opacity: 0;
+}
+
+.whistle.blowing .steam {
+  opacity: 1;
+}
+
+.ribbon,
+.circuit-board,
+.circuit {
+  overflow: visible;
+}
+
+.cord-layer.dragging .cord-ring,
+.cord-layer.dragging .cord-hammer {
+  cursor: grabbing;
+}
+
+.cord-layer {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 4;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.cord-ring,
+.cord-hammer {
+  pointer-events: auto;
+  cursor: grab;
+  touch-action: none;
+}
+
+.comp svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.comp:focus-visible {
+  outline: 1px solid var(--line);
+  outline-offset: 2px;
+}
+
+.paddle-on {
+  display: none;
+}
+
+.button.pressed .face {
+  fill: #ffffff;
+}
+
+.switch.on .paddle-off {
+  display: none;
+}
+
+.switch.on .paddle-on {
+  display: block;
+}
+
+.scope.holding .screen {
+  fill: #ffffff;
+}
+
+.scope.holding .wave {
+  stroke: #062406;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 720px) {
+  .page {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: stretch;
+  }
+
+  .cabinet {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    width: 100%;
+  }
+
+  .ribbon-left {
+    grid-row: 2;
+  }
+
+  .ribbon-right {
+    grid-row: 2;
+  }
+
+  .ribbon {
+    justify-self: center;
+  }
+}

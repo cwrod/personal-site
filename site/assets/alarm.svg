@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 49" fill="none" stroke="#ffffff">
+  <title>Break glass</title>
+  <path d="M12.15 2.35Q14.9 0.35 17.65 2.35" stroke-width="0.4"/>
+  <rect x="12.15" y="2.35" width="5.5" height="5.5" stroke-width="0.38"/>
+  <rect x="12.4" y="7.85" width="5" height="1.35" stroke-width="0.35"/>
+  <g class="rotor">
+    <path class="beam" d="M14.9 5.1L28.4 2.55L28.4 7.65Z" fill="#ffffff" stroke="none"/>
+    <path class="beam dim" d="M14.9 5.1L1.4 2.55L1.4 7.65Z" fill="#ffffff" stroke="none"/>
+    <path class="mirror" d="M13.55 3.55L16.25 4.15L16.25 6.05L13.55 6.65Z" fill="transparent" stroke-width="0.35"/>
+    <circle cx="14.9" cy="5.1" r="0.55" stroke-width="0.3"/>
+  </g>
+  <line x1="13.25" y1="2.45" x2="13.25" y2="7.75" stroke-width="0.28"/>
+  <line x1="14.9" y1="2.45" x2="14.9" y2="7.75" stroke-width="0.28"/>
+  <line x1="16.55" y1="2.45" x2="16.55" y2="7.75" stroke-width="0.28"/>
+  <rect x="1.3" y="9.2" width="27.2" height="37.4" rx="0.45" stroke-width="0.45"/>
+  <circle cx="3.2" cy="11.1" r="0.45" stroke-width="0.28"/>
+  <circle cx="26.6" cy="11.1" r="0.45" stroke-width="0.28"/>
+  <circle cx="3.2" cy="44.5" r="0.45" stroke-width="0.28"/>
+  <circle cx="26.6" cy="44.5" r="0.45" stroke-width="0.28"/>
+  <line x1="2.2" y1="31.0" x2="27.6" y2="31.0" stroke-width="0.4"/>
+  <line x1="14.9" y1="16.2" x2="14.9" y2="29.0" stroke-width="0.4"/>
+  <g class="lever">
+    <rect x="8.8" y="12.6" width="12.2" height="3.5" rx="0.3" stroke-width="0.4"/>
+    <line x1="10.2" y1="14.35" x2="19.6" y2="14.35" stroke-width="0.25"/>
+    <rect x="13.95" y="15.9" width="1.9" height="2.8" stroke-width="0.35"/>
+  </g>
+  <g class="glass">
+    <rect class="pane" x="2.35" y="10.25" width="25.1" height="20" fill="transparent" stroke-width="0.3"/>
+    <line x1="3.5" y1="11.5" x2="26.3" y2="29.0" stroke-width="0.28" opacity="0.7"/>
+    <line x1="26.3" y1="11.5" x2="3.5" y2="29.0" stroke-width="0.28" opacity="0.7"/>
+    <line x1="2.7" y1="20.25" x2="27.1" y2="20.25" stroke-width="0.2" opacity="0.4"/>
+    <line x1="14.9" y1="10.6" x2="14.9" y2="29.6" stroke-width="0.2" opacity="0.4"/>
+  </g>
+  <circle class="hook" cx="30.2" cy="14.0" r="0.85" stroke-width="0.38"/>
+  <line x1="28.5" y1="14.0" x2="29.35" y2="14.0" stroke-width="0.35"/>
+  <text class="plate" x="14.9" y="35.4" text-anchor="middle" fill="#ffffff" stroke="none" font-size="2.05">IN CASE OF</text>
+  <text class="plate" x="14.9" y="38.9" text-anchor="middle" fill="#ffffff" stroke="none" font-size="2.05">EMERGENCY</text>
+  <text class="plate" x="14.9" y="42.4" text-anchor="middle" fill="#ffffff" stroke="none" font-size="2.05">BREAK GLASS</text>
+</svg>
