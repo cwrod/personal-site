@@ -76,7 +76,9 @@ body {
   justify-content: center;
   gap: clamp(16px, 2.4vw, 36px);
   width: min(1480px, 100%);
-  min-width: calc(var(--ribbon-right) * 3);
+  min-width: calc(var(--ribbon-right) * 4);
+  margin-inline: auto;
+  flex-shrink: 0;
 }
 
 .page-feeds {
@@ -206,6 +208,57 @@ body {
   width: 25px;
 }
 
+.comp.dnp {
+  width: 70px;
+}
+
+.comp.dnp svg {
+  overflow: visible;
+}
+
+.dnp .guts {
+  pointer-events: none;
+}
+
+.dnp .plate .skin,
+.dnp-sparks .skin {
+  fill: #062406;
+}
+
+.dnp .plate-copy,
+.dnp-sparks .plate-copy {
+  font-family: "Press Start 2P", "Courier New", Courier, monospace;
+  font-size: 2.85px;
+  fill: #ffffff;
+  stroke: none;
+  text-anchor: middle;
+}
+
+.dnp.pressed .face {
+  fill: #ffffff;
+}
+
+.dnp-sparks,
+.site-fire {
+  position: fixed;
+  pointer-events: none;
+  z-index: 6;
+  overflow: visible;
+}
+
+.dnp-sparks {
+  left: 0;
+  top: 0;
+}
+
+.site-fire {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 220px;
+}
+
 .comp.button-wide {
   width: 38px;
 }
@@ -312,6 +365,17 @@ body {
   width: 50px;
   cursor: default;
   pointer-events: none;
+}
+
+.comp.radar {
+  width: 50px;
+  cursor: default;
+  pointer-events: none;
+}
+
+.radar .blip {
+  fill: #ffffff;
+  stroke: none;
 }
 
 .comp.dial-vu {

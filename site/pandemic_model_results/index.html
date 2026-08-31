@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Preset sweep</title>
+    <link rel="stylesheet" href="static/styles.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="masthead">
+        <p class="kicker">Sweep desk</p>
+        <h1>Preset sweep</h1>
+        <p class="lede">
+          Choose a row to plot its categories. Highlight other presets to bold
+          every combination that includes those choices. Click a point to pin
+          just that combo. Other rows start cleared, so no combo is highlighted
+          until you pick chips or click a point.
+        </p>
+      </header>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div class="panel-head-row">
+            <h2>Presets</h2>
+            <button type="button" class="ghost" id="clear-all">Clear all</button>
+          </div>
+          <p>The radio picks the plotted row. Chips on that row stay on. Chips on other rows add or remove highlights.</p>
+        </div>
+        <div class="preset-rows" id="preset-rows"></div>
+      </section>
+
+      <section class="results">
+        <div class="panel-head">
+          <h2>Results</h2>
+          <p id="status" class="status" role="status"></p>
+        </div>
+        <div id="plot"></div>
+        <div id="delta-plots" class="delta-plots"></div>
+      </section>
+    </div>
+
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+    <script src="data.js"></script>
+    <script src="static/app.js"></script>
+  </body>
+</html>

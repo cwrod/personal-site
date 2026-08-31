@@ -1906,6 +1906,436 @@
 
   document.querySelectorAll(".comp.alarm").forEach(initAlarm);
 
+  const initRadar = (radar) => {
+    const sweep = radar.querySelector(".sweep");
+    const blips = [...radar.querySelectorAll(".blip")];
+    if (!sweep || blips.length < 8) return;
+
+    const CX = 12;
+    const CY = 12;
+    const R_MIN = 2.35;
+    const R_MAX = 7.4;
+    const MIN_SEP = 2.2;
+    const REST_R = 0.48;
+    const POP_R = 1.28;
+    const seed = (hash01(radar.getAttribute("data-cid") || "radar") * 4294967296) >>> 0;
+    const rng = makeRng(seed ^ 0x5ad17e);
+
+    const bearing = (x, y) => {
+      let deg = (Math.atan2(y - CY, x - CX) * 180) / Math.PI + 90;
+      if (deg < 0) deg += 360;
+      if (deg >= 360) deg -= 360;
+      return deg;
+    };
+
+    const spots = blips.map(() => ({ x: CX, y: CY }));
+    const angles = spots.map(() => 0);
+    const glow = blips.map(() => 0);
+    const punch = blips.map(() => 0);
+
+    const place = (index) => {
+      const others = spots.filter((p, i) => i !== index && Math.hypot(p.x - CX, p.y - CY) > 0.2);
+      for (let tryNo = 0; tryNo < 50; tryNo += 1) {
+        const theta = rng() * Math.PI * 2;
+        const u = rng();
+        const r = Math.sqrt(R_MIN * R_MIN + u * (R_MAX * R_MAX - R_MIN * R_MIN));
+        const x = CX + Math.cos(theta) * r;
+        const y = CY + Math.sin(theta) * r;
+        if (others.every((p) => Math.hypot(p.x - x, p.y - y) >= MIN_SEP)) {
+          spots[index] = { x, y };
+          angles[index] = bearing(x, y);
+          blips[index].setAttribute("cx", x.toFixed(2));
+          blips[index].setAttribute("cy", y.toFixed(2));
+          return;
+        }
+      }
+      const fallback = rng() * Math.PI * 2;
+      const fr = R_MIN + rng() * (R_MAX - R_MIN);
+      spots[index] = { x: CX + Math.cos(fallback) * fr, y: CY + Math.sin(fallback) * fr };
+      angles[index] = bearing(spots[index].x, spots[index].y);
+      blips[index].setAttribute("cx", spots[index].x.toFixed(2));
+      blips[index].setAttribute("cy", spots[index].y.toFixed(2));
+    };
+
+    for (let i = 0; i < 8; i += 1) place(i);
+
+    let beam = rng() * 360;
+    let prev = beam;
+    let last = performance.now();
+
+    const crossed = (from, to, target) => {
+      if (to >= from) return target >= from && target < to;
+      return target >= from || target < to;
+    };
+
+    const frame = (now) => {
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+      const c = Math.min(1, Math.max(0, getChaos() / 100));
+      const count = 1 + Math.round(7 * c);
+      beam = (beam + (102 + c * 465) * dt) % 360;
+
+      for (let i = 0; i < 8; i += 1) {
+        if (i < count && crossed(prev, beam, angles[i])) {
+          glow[i] = 1;
+          punch[i] = 1;
+        }
+        const fade = i < count ? 0.42 + (1 - c) * 0.2 : 1.5;
+        glow[i] = Math.max(0, glow[i] - dt * fade);
+        punch[i] = Math.max(0, punch[i] - dt * 7.5);
+        const radius = REST_R + (POP_R - REST_R) * punch[i] * punch[i];
+        blips[i].setAttribute("r", radius.toFixed(3));
+        blips[i].setAttribute("opacity", glow[i].toFixed(3));
+      }
+
+      sweep.setAttribute("transform", `rotate(${beam.toFixed(2)} ${CX} ${CY})`);
+      prev = beam;
+      requestAnimationFrame(frame);
+    };
+    frame(performance.now());
+  };
+
+  document.querySelectorAll(".comp.radar").forEach(initRadar);
+
+  const initDnp = (btn) => {
+    const svg = btn.querySelector("svg");
+    const plate = btn.querySelector(".plate");
+    const face = btn.querySelector(".face");
+    if (!svg || !plate || !face) return;
+
+    const layer = document.createElementNS(svgNS, "svg");
+    layer.classList.add("dnp-sparks");
+    layer.setAttribute("aria-hidden", "true");
+    document.body.appendChild(layer);
+
+    const syncLayer = () => {
+      layer.setAttribute("viewBox", `0 0 ${window.innerWidth} ${window.innerHeight}`);
+      layer.setAttribute("width", String(window.innerWidth));
+      layer.setAttribute("height", String(window.innerHeight));
+    };
+    syncLayer();
+    window.addEventListener("resize", syncLayer);
+
+    let stage = 0;
+    let sparks = [];
+    let flyer = null;
+    let fire = null;
+    let raf = 0;
+    let arcing = false;
+    let edgeCool = 0;
+    let last = performance.now();
+
+    const kick = () => {
+      if (!raf) raf = requestAnimationFrame(frame);
+    };
+
+    const faceCenter = () => {
+      const rect = face.getBoundingClientRect();
+      return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+    };
+
+    const addBolt = (origin, angle, spec) => {
+      const path = document.createElementNS(svgNS, "path");
+      path.setAttribute("fill", "none");
+      path.setAttribute("stroke", "#ffffff");
+      path.setAttribute("stroke-width", spec.width);
+      path.setAttribute("stroke-linecap", "square");
+      path.setAttribute("stroke-linejoin", "miter");
+      layer.appendChild(path);
+      sparks.push({
+        el: path,
+        origin,
+        angle,
+        reach: spec.reach,
+        maxReach: spec.maxReach,
+        jagged: spec.jagged,
+        forks: spec.forks,
+        life: spec.life,
+        fade: spec.fade,
+      });
+    };
+
+    const asPath = (pts) => pts.map((p) => `${p.x.toFixed(2)},${p.y.toFixed(2)}`).join("L");
+
+    const subdivide = (a, b, displace, depth) => {
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const dist = Math.hypot(dx, dy);
+      if (depth <= 0 || dist < 6) return [a, b];
+      const nx = -dy / (dist || 1);
+      const ny = dx / (dist || 1);
+      const offset = (Math.random() < 0.35 ? 0.35 : 1) * (Math.random() * 2 - 1) * displace;
+      const mid = {
+        x: (a.x + b.x) * 0.5 + nx * offset,
+        y: (a.y + b.y) * 0.5 + ny * offset,
+      };
+      const next = displace * 0.55;
+      const left = subdivide(a, mid, next, depth - 1);
+      const right = subdivide(mid, b, next, depth - 1);
+      return left.slice(0, -1).concat(right);
+    };
+
+    const drawBolt = (origin, angle, reach, jagged, forks) => {
+      const dest = {
+        x: origin.x + Math.cos(angle) * reach,
+        y: origin.y + Math.sin(angle) * reach,
+      };
+      const depth = jagged > 12 ? 4 : 3;
+      const trunk = subdivide(origin, dest, jagged, depth);
+      let d = `M${asPath(trunk)}`;
+      for (let f = 0; f < forks; f += 1) {
+        if (trunk.length < 5) break;
+        const idx = 2 + Math.floor(Math.random() * (trunk.length - 4));
+        const from = trunk[idx];
+        const t = idx / (trunk.length - 1);
+        const forkReach = (1 - t) * reach * (0.28 + Math.random() * 0.4);
+        const side = f % 2 === 0 ? -1 : 1;
+        const forkAngle = angle + side * (0.7 + Math.random() * 1.05);
+        const forkDest = {
+          x: from.x + Math.cos(forkAngle) * forkReach,
+          y: from.y + Math.sin(forkAngle) * forkReach,
+        };
+        d += `M${asPath(subdivide(from, forkDest, jagged * 0.65, 3))}`;
+      }
+      return d;
+    };
+
+    const burstSparks = () => {
+      const origin = faceCenter();
+      for (let i = 0; i < 10; i += 1) {
+        addBolt(origin, (Math.PI * 2 * i) / 10 + (Math.random() - 0.5) * 0.4, {
+          width: i === 0 ? "1.55" : (0.85 + Math.random() * 0.4).toFixed(2),
+          reach: 10,
+          maxReach: 52 + Math.random() * 58,
+          jagged: 9 + Math.random() * 7,
+          forks: 1 + (Math.random() < 0.6 ? 1 : 0) + (Math.random() < 0.35 ? 1 : 0),
+          life: 1,
+          fade: 0.032,
+        });
+      }
+      arcing = true;
+      edgeCool = 0.42;
+      kick();
+    };
+
+    const spawnEdgeSpark = () => {
+      const rect = face.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const r = Math.max(rect.width, rect.height) * 0.5;
+      const angle = Math.random() * Math.PI * 2;
+      addBolt(
+        { x: cx + Math.cos(angle) * r, y: cy + Math.sin(angle) * r },
+        angle + (Math.random() - 0.5) * 0.55,
+        {
+          width: (0.7 + Math.random() * 0.28).toFixed(2),
+          reach: 3,
+          maxReach: 12 + Math.random() * 14,
+          jagged: 3.2 + Math.random() * 2.6,
+          forks: Math.random() < 0.4 ? 1 : 0,
+          life: 0.62,
+          fade: 0.055,
+        },
+      );
+    };
+
+    const placePlate = (item) => {
+      item.el.setAttribute(
+        "transform",
+        `translate(${item.x.toFixed(1)} ${item.y.toFixed(1)}) rotate(${item.rot.toFixed(1)}) ` +
+          `scale(${item.sx.toFixed(3)} ${item.sy.toFixed(3)}) ` +
+          `translate(${(-item.pcx).toFixed(2)} ${(-item.pcy).toFixed(2)})`,
+      );
+    };
+
+    const dropPlate = () => {
+      const box = plate.getBBox();
+      const screen = plate.getBoundingClientRect();
+      const g = document.createElementNS(svgNS, "g");
+      g.classList.add("dnp-plate");
+      g.appendChild(plate.cloneNode(true));
+      layer.appendChild(g);
+      plate.setAttribute("visibility", "hidden");
+      flyer = {
+        el: g,
+        x: screen.left + screen.width / 2,
+        y: screen.top + screen.height / 2,
+        vx: (Math.random() - 0.5) * 0.8,
+        vy: 0.4,
+        rot: (Math.random() - 0.5) * 4,
+        vr: (Math.random() - 0.5) * 6,
+        sx: screen.width / box.width,
+        sy: screen.height / box.height,
+        pcx: box.x + box.width / 2,
+        pcy: box.y + box.height / 2,
+      };
+      placePlate(flyer);
+      kick();
+    };
+
+    const startFire = () => {
+      if (fire) return;
+      const canvas = document.createElement("canvas");
+      canvas.classList.add("site-fire");
+      canvas.setAttribute("aria-hidden", "true");
+      document.body.appendChild(canvas);
+      const ctx = canvas.getContext("2d");
+      const parts = [];
+      const resize = () => {
+        const dpr = Math.min(2, window.devicePixelRatio || 1);
+        const w = window.innerWidth;
+        const h = 220;
+        canvas.width = Math.floor(w * dpr);
+        canvas.height = Math.floor(h * dpr);
+        canvas.style.width = `${w}px`;
+        canvas.style.height = `${h}px`;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      };
+      resize();
+      window.addEventListener("resize", resize);
+      fire = { canvas, ctx, parts, resize };
+      kick();
+    };
+
+    const boom500 = () => {
+      const host = location.hostname || "localhost";
+      const port = location.port || (location.protocol === "https:" ? "443" : "80");
+      const html = `<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
+<html><head>
+<title>500 Internal Server Error</title>
+</head><body>
+<h1>Internal Server Error</h1>
+<p>The server encountered an internal error or
+misconfiguration and was unable to complete
+your request.</p>
+<p>Please contact the server administrator at 
+ webmaster@${host} to inform them of the time this error occurred,
+ and the actions you performed just before this error.</p>
+<p>More information about this error may be available
+in the server error log.</p>
+<hr>
+<address>Apache/2.4.58 (Unix) Server at ${host} Port ${port}</address>
+</body></html>`;
+      document.open();
+      document.write(html);
+      document.close();
+    };
+
+    const stepFire = () => {
+      if (!fire) return;
+      const { ctx, parts } = fire;
+      const w = window.innerWidth;
+      const h = 220;
+      const need = Math.floor(w * 0.22);
+      while (parts.length < need) {
+        parts.push({
+          x: Math.random() * w,
+          y: h + Math.random() * 12,
+          vx: (Math.random() - 0.5) * 0.7,
+          vy: -1.1 - Math.random() * 2.8,
+          life: 0.55 + Math.random() * 0.45,
+          decay: 0.012 + Math.random() * 0.02,
+          size: 4 + Math.random() * 10,
+          hot: Math.random(),
+        });
+      }
+      ctx.clearRect(0, 0, w, h);
+      ctx.globalCompositeOperation = "lighter";
+      for (let i = parts.length - 1; i >= 0; i -= 1) {
+        const p = parts[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy -= 0.018;
+        p.life -= p.decay;
+        if (p.life <= 0 || p.y < -20) {
+          parts.splice(i, 1);
+          continue;
+        }
+        const alpha = Math.max(0, p.life);
+        const r = p.size * (0.45 + alpha);
+        const g = p.hot > 0.62 ? 230 : p.hot > 0.3 ? 140 : 70;
+        const b = p.hot > 0.75 ? 160 : 20;
+        ctx.fillStyle = `rgba(255,${g},${b},${(0.22 + alpha * 0.55).toFixed(3)})`;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalCompositeOperation = "source-over";
+    };
+
+    const frame = (now) => {
+      raf = 0;
+      const t = now || performance.now();
+      const dt = Math.min(0.05, (t - last) / 1000);
+      last = t;
+      if (arcing) {
+        edgeCool -= dt;
+        if (edgeCool <= 0) {
+          const n = Math.random() < 0.28 ? 2 : 1;
+          for (let i = 0; i < n; i += 1) spawnEdgeSpark();
+          edgeCool = 0.14 + Math.random() * 0.38;
+        }
+      }
+      sparks = sparks.filter((spark) => {
+        spark.reach += (spark.maxReach - spark.reach) * 0.32;
+        spark.life -= spark.fade || 0.032;
+        if (spark.life <= 0) {
+          spark.el.remove();
+          return false;
+        }
+        if (Math.random() < 0.12) spark.el.setAttribute("d", "");
+        else {
+          spark.el.setAttribute(
+            "d",
+            drawBolt(spark.origin, spark.angle, spark.reach, spark.jagged, spark.forks),
+          );
+        }
+        spark.el.setAttribute("opacity", Math.min(1, spark.life).toFixed(3));
+        return true;
+      });
+
+      if (flyer) {
+        flyer.vy += 1.15;
+        flyer.vx *= 0.992;
+        flyer.x += flyer.vx;
+        flyer.y += flyer.vy;
+        flyer.rot += flyer.vr;
+        placePlate(flyer);
+        if (flyer.y > window.innerHeight + 80) {
+          flyer.el.remove();
+          flyer = null;
+        }
+      }
+
+      stepFire();
+      if (sparks.length || flyer || fire || arcing) kick();
+    };
+
+    const down = (event) => {
+      if (event.button != null && event.button !== 0) return;
+      btn.classList.add("pressed");
+      try {
+        btn.setPointerCapture(event.pointerId);
+      } catch {
+        /* ignore */
+      }
+    };
+    const up = () => btn.classList.remove("pressed");
+
+    btn.addEventListener("pointerdown", down);
+    btn.addEventListener("pointerup", up);
+    btn.addEventListener("pointercancel", up);
+    btn.addEventListener("click", () => {
+      stage += 1;
+      if (stage === 1) burstSparks();
+      else if (stage === 2) dropPlate();
+      else if (stage === 3) startFire();
+      else if (stage === 4) boom500();
+    });
+  };
+
+  document.querySelectorAll(".comp.dnp").forEach(initDnp);
+
   const initTraces = (board) => {
     const circuit = board.querySelector(".circuit");
     const svg = board.querySelector(".traces");

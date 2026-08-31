@@ -16,9 +16,9 @@
     <aside class="ribbon ribbon-left" aria-label="Left circuitry">
       <div class="circuit-board">
         <svg class="traces" aria-hidden="true"></svg>
-        <script type="application/json" class="wire-spec">[{"a":"l-pl","fa":"right","ta":0.45,"b":"l-br","fb":"left","tb":0.42},{"a":"l-pl","fa":"bottom","ta":0.22,"b":"l-sl","fb":"top","tb":0.55,"via":[[40,20.4]]},{"a":"l-br","fa":"right","ta":0.5,"b":"l-bq","fb":"top","tb":0.45,"via":[[248,16.8]]},{"a":"l-sl","fa":"right","ta":0.55,"b":"l-se","fb":"left","tb":0.28},{"a":"l-se","fa":"right","ta":0.62,"b":"l-rk","fb":"left","tb":0.38},{"a":"l-se","fa":"bottom","ta":0.22,"b":"l-bw","fb":"top","tb":0.48,"via":[[48,38.4]]},{"a":"l-bq","fa":"bottom","ta":0.55,"b":"l-rk","fb":"right","tb":0.42,"via":[[262,36.0]]},{"a":"l-rk","fa":"bottom","ta":0.72,"b":"l-dt","fb":"top","tb":0.32},{"a":"l-bw","fa":"bottom","ta":0.58,"b":"l-sm","fb":"top","tb":0.22},{"a":"l-sm","fa":"right","ta":0.22,"b":"l-dt","fb":"left","tb":0.55,"via":[[176,50.8]]},{"a":"l-sm","fa":"bottom","ta":0.38,"b":"l-rgb","fb":"top","tb":0.36},{"a":"l-dt","fa":"bottom","ta":0.62,"b":"l-br2","fb":"top","tb":0.5},{"a":"l-br2","fa":"bottom","ta":0.5,"b":"l-mx","fb":"top","tb":0.68},{"a":"l-rgb","fa":"bottom","ta":0.55,"b":"l-kb","fb":"top","tb":0.34}]</script>
+        <script type="application/json" class="wire-spec">[{"a":"l-pl","fa":"right","ta":0.45,"b":"l-dn","fb":"left","tb":0.28},{"a":"l-pl","fa":"bottom","ta":0.22,"b":"l-sl","fb":"top","tb":0.55,"via":[[40,20.4]]},{"a":"l-dn","fa":"right","ta":0.22,"b":"l-bq","fb":"top","tb":0.45,"via":[[248,16.8]]},{"a":"l-sl","fa":"right","ta":0.55,"b":"l-se","fb":"left","tb":0.28},{"a":"l-se","fa":"right","ta":0.62,"b":"l-rk","fb":"left","tb":0.38},{"a":"l-se","fa":"bottom","ta":0.22,"b":"l-bw","fb":"top","tb":0.48,"via":[[48,38.4]]},{"a":"l-bq","fa":"bottom","ta":0.55,"b":"l-rk","fb":"right","tb":0.42,"via":[[262,36.0]]},{"a":"l-rk","fa":"bottom","ta":0.72,"b":"l-dt","fb":"top","tb":0.32},{"a":"l-bw","fa":"bottom","ta":0.58,"b":"l-sm","fb":"top","tb":0.22},{"a":"l-sm","fa":"right","ta":0.22,"b":"l-dt","fb":"left","tb":0.55,"via":[[176,50.8]]},{"a":"l-sm","fa":"bottom","ta":0.38,"b":"l-rgb","fb":"top","tb":0.36},{"a":"l-dt","fa":"bottom","ta":0.62,"b":"l-br2","fb":"top","tb":0.5},{"a":"l-br2","fa":"bottom","ta":0.5,"b":"l-rd","fb":"top","tb":0.42},{"a":"l-rgb","fa":"bottom","ta":0.55,"b":"l-kb","fb":"top","tb":0.34}]</script>
         <div class="circuit circuit-left" style="width:276px">
-        <div class="comp plasma" role="img" aria-label="Plasma ball. Touch the glass." data-port="6.6 29.8 14.8 6.4" data-faces="left right bottom" data-cid="l-pl" data-links="l-br l-sl" style="left:54px;top:1.6%"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 38" fill="none" stroke="#ffffff">
+        <div class="comp plasma" role="img" aria-label="Plasma ball. Touch the glass." data-port="6.6 29.8 14.8 6.4" data-faces="left right bottom" data-cid="l-pl" data-links="l-dn l-sl" style="left:54px;top:1.6%"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 38" fill="none" stroke="#ffffff">
   <title>Plasma ball</title>
   <g class="bolts">
     <path class="bolt" stroke-width="0.38" stroke-linecap="square" stroke-linejoin="miter"/>
@@ -44,18 +44,61 @@
   <circle cx="8.5" cy="34.4" r="0.45" stroke-width="0.28"/>
   <circle cx="19.5" cy="34.4" r="0.45" stroke-width="0.28"/>
 </svg></div>
-        <button type="button" class="comp button" aria-label="Round button" data-cid="l-br" data-links="l-pl l-bq" style="left:132px;top:13.2%"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="#ffffff">
-  <title>Button</title>
-  <rect x="1.2" y="1.2" width="13.6" height="13.6" rx="0.5" stroke-width="0.45"/>
-  <circle cx="3.15" cy="3.15" r="0.55" stroke-width="0.3"/>
-  <circle cx="12.85" cy="3.15" r="0.55" stroke-width="0.3"/>
-  <circle cx="3.15" cy="12.85" r="0.55" stroke-width="0.3"/>
-  <circle cx="12.85" cy="12.85" r="0.55" stroke-width="0.3"/>
-  <circle cx="8" cy="8" r="4.7" stroke-width="0.4"/>
-  <circle cx="8" cy="8" r="3.5" stroke-width="0.3"/>
-  <circle class="face" cx="8" cy="8" r="2.15" stroke-width="0.45"/>
+        <button type="button" class="comp dnp" aria-label="Do not press." data-cid="l-dn" data-links="l-pl l-bq" style="left:150px;top:11.4%"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 48" fill="none" stroke="#ffffff">
+  <title>Do not press</title>
+  <rect x="1.3" y="1.3" width="39.4" height="45.4" rx="0.45" stroke-width="0.45"/>
+  <circle cx="3.3" cy="3.3" r="0.45" stroke-width="0.28"/>
+  <circle cx="38.7" cy="3.3" r="0.45" stroke-width="0.28"/>
+  <circle cx="3.3" cy="44.7" r="0.45" stroke-width="0.28"/>
+  <circle cx="38.7" cy="44.7" r="0.45" stroke-width="0.28"/>
+  <circle cx="21" cy="14.4" r="8.05" stroke-width="0.4"/>
+  <circle cx="21" cy="14.4" r="6.15" stroke-width="0.3"/>
+  <circle class="face" cx="21" cy="14.4" r="3.85" stroke-width="0.45"/>
+  <g class="guts">
+    <rect x="5.15" y="26.35" width="31.7" height="15.7" rx="0.2" stroke-width="0.28" opacity="0.45"/>
+    <g stroke-width="0.32" stroke-linecap="square" stroke-linejoin="miter">
+      <path d="M5.15 29.6H12.4L14.8 31.9H18.1"/>
+      <path d="M5.15 30.5H11.7L14.2 32.9H17.4"/>
+      <path d="M5.15 31.4H12.1L13.9 33.3H16.6"/>
+    </g>
+    <g stroke-width="0.32" stroke-linecap="square" stroke-linejoin="miter">
+      <path d="M36.85 28.7H29.8V32.2H26.4L24.2 34.6"/>
+      <path d="M36.85 29.6H30.7V33.1H27.2L25.1 35.4"/>
+      <path d="M36.85 30.5H31.6V33.9H28.1L26.2 36.1"/>
+    </g>
+    <path d="M8.4 36.2H13.2L15.6 38.8H20.4" stroke-width="0.32"/>
+    <path d="M8.4 37.1H12.6L15.1 39.6H19.2" stroke-width="0.32"/>
+    <path d="M8.4 38.0H13.0L14.7 40.0" stroke-width="0.32"/>
+    <path d="M21.6 27.2C24.8 27.6 26.9 30.8 25.4 33.7C23.8 36.8 19.6 37.6 18.2 34.8C17.1 32.6 19.4 31.2 21.1 32.4" stroke-width="0.34" stroke-linecap="round"/>
+    <path d="M31.2 36.4C33.6 37.2 34.8 39.6 33.1 41.2" stroke-width="0.3" stroke-linecap="round"/>
+    <path d="M22.8 39.2L25.6 41.4L28.8 40.6" stroke-width="0.3"/>
+    <circle cx="18.1" cy="31.9" r="0.42" fill="#ffffff" stroke="none"/>
+    <circle cx="24.2" cy="34.6" r="0.42" fill="#ffffff" stroke="none"/>
+    <circle cx="20.4" cy="38.8" r="0.38" fill="#ffffff" stroke="none"/>
+    <circle cx="26.2" cy="36.1" r="0.34" fill="#ffffff" stroke="none"/>
+    <circle cx="15.6" cy="27.9" r="0.32" stroke-width="0.24"/>
+    <circle cx="17.4" cy="27.9" r="0.32" stroke-width="0.24"/>
+    <circle cx="19.2" cy="27.9" r="0.32" stroke-width="0.24"/>
+    <circle cx="21.0" cy="27.9" r="0.32" stroke-width="0.24"/>
+    <circle cx="22.8" cy="27.9" r="0.32" stroke-width="0.24"/>
+    <line x1="15.6" y1="26.35" x2="15.6" y2="27.9" stroke-width="0.22"/>
+    <line x1="17.4" y1="26.35" x2="17.4" y2="27.9" stroke-width="0.22"/>
+    <line x1="19.2" y1="26.35" x2="19.2" y2="27.9" stroke-width="0.22"/>
+    <line x1="21.0" y1="26.35" x2="21.0" y2="27.9" stroke-width="0.22"/>
+    <line x1="22.8" y1="26.35" x2="22.8" y2="27.9" stroke-width="0.22"/>
+  </g>
+  <g class="plate">
+    <rect class="skin" x="4.4" y="25.6" width="33.2" height="17.2" rx="0.3" fill="#062406" stroke-width="0.4"/>
+    <rect x="5.15" y="26.35" width="31.7" height="15.7" rx="0.2" stroke-width="0.28" opacity="0.55"/>
+    <circle cx="6.4" cy="27.6" r="0.38" stroke-width="0.24"/>
+    <circle cx="35.6" cy="27.6" r="0.38" stroke-width="0.24"/>
+    <circle cx="6.4" cy="40.8" r="0.38" stroke-width="0.24"/>
+    <circle cx="35.6" cy="40.8" r="0.38" stroke-width="0.24"/>
+    <text class="plate-copy" x="21" y="33.1">DO NOT</text>
+    <text class="plate-copy" x="21" y="38.8">PRESS</text>
+  </g>
 </svg></button>
-        <button type="button" class="comp button" aria-label="Square button" data-cid="l-bq" data-links="l-br l-rk" style="left:248px;top:21.4%"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="#ffffff">
+        <button type="button" class="comp button" aria-label="Square button" data-cid="l-bq" data-links="l-dn l-rk" style="left:248px;top:21.4%"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="#ffffff">
   <title>Square button</title>
   <rect x="1.2" y="1.2" width="13.6" height="13.6" rx="0.5" stroke-width="0.45"/>
   <circle cx="3.15" cy="3.15" r="0.55" stroke-width="0.3"/>
@@ -171,7 +214,7 @@
   <text class="hi-label" x="15.4" y="44.6" fill="#ffffff" stroke="none" font-size="3.4">HI</text>
   <text class="hi" x="23.6" y="44.6" fill="#ffffff" stroke="none" font-size="3.4">00</text>
 </svg></div>
-        <button type="button" class="comp button" aria-label="Round button" data-cid="l-br2" data-links="l-dt l-mx" style="left:228px;top:70.6%"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="#ffffff">
+        <button type="button" class="comp button" aria-label="Round button" data-cid="l-br2" data-links="l-dt l-rd" style="left:228px;top:70.6%"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="#ffffff">
   <title>Button</title>
   <rect x="1.2" y="1.2" width="13.6" height="13.6" rx="0.5" stroke-width="0.45"/>
   <circle cx="3.15" cy="3.15" r="0.55" stroke-width="0.3"/>
@@ -182,57 +225,32 @@
   <circle cx="8" cy="8" r="3.5" stroke-width="0.3"/>
   <circle class="face" cx="8" cy="8" r="2.15" stroke-width="0.45"/>
 </svg></button>
-        <div class="comp mixer" role="group" aria-label="Mixer. Drag the four sliders." data-cid="l-mx" data-links="l-br2" style="left:184px;top:76.4%"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 34" fill="none" stroke="#ffffff">
-  <title>Mixer</title>
-  <rect x="1.2" y="1.2" width="45.6" height="31.6" rx="0.5" stroke-width="0.45"/>
-  <circle cx="3.1" cy="3.1" r="0.5" stroke-width="0.3"/>
-  <circle cx="44.9" cy="3.1" r="0.5" stroke-width="0.3"/>
-  <circle cx="3.1" cy="30.9" r="0.5" stroke-width="0.3"/>
-  <circle cx="44.9" cy="30.9" r="0.5" stroke-width="0.3"/>
-  <g class="fader" data-channel="1">
-    <circle cx="8" cy="4.4" r="1.15" stroke-width="0.35"/>
-    <line x1="8" y1="3.25" x2="8" y2="4.4" stroke-width="0.3"/>
-    <line class="track" x1="8" y1="6.4" x2="8" y2="29.2" stroke-width="0.4"/>
-    <line x1="6.7" y1="6.4" x2="9.3" y2="6.4" stroke-width="0.28"/>
-    <line x1="6.7" y1="29.2" x2="9.3" y2="29.2" stroke-width="0.28"/>
-    <line x1="7.2" y1="12" x2="8.8" y2="12" stroke-width="0.22"/>
-    <line x1="7.2" y1="17.8" x2="8.8" y2="17.8" stroke-width="0.22"/>
-    <line x1="7.2" y1="23.6" x2="8.8" y2="23.6" stroke-width="0.22"/>
-    <rect class="cap" x="5.7" y="16.6" width="4.6" height="2.4" stroke-width="0.4"/>
+        <div class="comp radar" role="img" aria-label="Radar. Contacts appear as chaos rises." data-cid="l-rd" data-links="l-br2" style="left:218px;top:80.0%"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#ffffff">
+  <title>Radar</title>
+  <rect x="1.3" y="1.3" width="21.4" height="21.4" rx="0.4" stroke-width="0.45"/>
+  <circle cx="3.3" cy="3.3" r="0.45" stroke-width="0.28"/>
+  <circle cx="20.7" cy="3.3" r="0.45" stroke-width="0.28"/>
+  <circle cx="3.3" cy="20.7" r="0.45" stroke-width="0.28"/>
+  <circle cx="20.7" cy="20.7" r="0.45" stroke-width="0.28"/>
+  <circle cx="12" cy="12" r="8.45" stroke-width="0.4"/>
+  <circle cx="12" cy="12" r="5.6" stroke-width="0.22" opacity="0.45"/>
+  <circle cx="12" cy="12" r="2.8" stroke-width="0.2" opacity="0.35"/>
+  <line x1="12" y1="3.55" x2="12" y2="20.45" stroke-width="0.18" opacity="0.35"/>
+  <line x1="3.55" y1="12" x2="20.45" y2="12" stroke-width="0.18" opacity="0.35"/>
+  <g class="sweep" transform="rotate(0 12 12)">
+    <line x1="12" y1="12" x2="12" y2="3.55" stroke-width="0.4"/>
+    <line x1="11.2" y1="4.2" x2="12.8" y2="4.2" stroke-width="0.28"/>
   </g>
-  <g class="fader" data-channel="2">
-    <circle cx="18.7" cy="4.4" r="1.15" stroke-width="0.35"/>
-    <line x1="18.7" y1="3.25" x2="18.7" y2="4.4" stroke-width="0.3"/>
-    <line class="track" x1="18.7" y1="6.4" x2="18.7" y2="29.2" stroke-width="0.4"/>
-    <line x1="17.4" y1="6.4" x2="20" y2="6.4" stroke-width="0.28"/>
-    <line x1="17.4" y1="29.2" x2="20" y2="29.2" stroke-width="0.28"/>
-    <line x1="17.9" y1="12" x2="19.5" y2="12" stroke-width="0.22"/>
-    <line x1="17.9" y1="17.8" x2="19.5" y2="17.8" stroke-width="0.22"/>
-    <line x1="17.9" y1="23.6" x2="19.5" y2="23.6" stroke-width="0.22"/>
-    <rect class="cap" x="16.4" y="10.2" width="4.6" height="2.4" stroke-width="0.4"/>
-  </g>
-  <g class="fader" data-channel="3">
-    <circle cx="29.3" cy="4.4" r="1.15" stroke-width="0.35"/>
-    <line x1="29.3" y1="3.25" x2="29.3" y2="4.4" stroke-width="0.3"/>
-    <line class="track" x1="29.3" y1="6.4" x2="29.3" y2="29.2" stroke-width="0.4"/>
-    <line x1="28" y1="6.4" x2="30.6" y2="6.4" stroke-width="0.28"/>
-    <line x1="28" y1="29.2" x2="30.6" y2="29.2" stroke-width="0.28"/>
-    <line x1="28.5" y1="12" x2="30.1" y2="12" stroke-width="0.22"/>
-    <line x1="28.5" y1="17.8" x2="30.1" y2="17.8" stroke-width="0.22"/>
-    <line x1="28.5" y1="23.6" x2="30.1" y2="23.6" stroke-width="0.22"/>
-    <rect class="cap" x="27" y="15.4" width="4.6" height="2.4" stroke-width="0.4"/>
-  </g>
-  <g class="fader" data-channel="4">
-    <circle cx="40" cy="4.4" r="1.15" stroke-width="0.35"/>
-    <line x1="40" y1="3.25" x2="40" y2="4.4" stroke-width="0.3"/>
-    <line class="track" x1="40" y1="6.4" x2="40" y2="29.2" stroke-width="0.4"/>
-    <line x1="38.7" y1="6.4" x2="41.3" y2="6.4" stroke-width="0.28"/>
-    <line x1="38.7" y1="29.2" x2="41.3" y2="29.2" stroke-width="0.28"/>
-    <line x1="39.2" y1="12" x2="40.8" y2="12" stroke-width="0.22"/>
-    <line x1="39.2" y1="17.8" x2="40.8" y2="17.8" stroke-width="0.22"/>
-    <line x1="39.2" y1="23.6" x2="40.8" y2="23.6" stroke-width="0.22"/>
-    <rect class="cap" x="37.7" y="8.8" width="4.6" height="2.4" stroke-width="0.4"/>
-  </g>
+  <circle class="blip" cx="14.8" cy="7.2" r="0.48" fill="#ffffff" stroke="none" opacity="0"/>
+  <circle class="blip" cx="16.6" cy="10.4" r="0.48" fill="#ffffff" stroke="none" opacity="0"/>
+  <circle class="blip" cx="17.1" cy="14.8" r="0.48" fill="#ffffff" stroke="none" opacity="0"/>
+  <circle class="blip" cx="13.4" cy="17.6" r="0.48" fill="#ffffff" stroke="none" opacity="0"/>
+  <circle class="blip" cx="8.2" cy="16.9" r="0.48" fill="#ffffff" stroke="none" opacity="0"/>
+  <circle class="blip" cx="6.4" cy="13.1" r="0.48" fill="#ffffff" stroke="none" opacity="0"/>
+  <circle class="blip" cx="7.1" cy="7.8" r="0.48" fill="#ffffff" stroke="none" opacity="0"/>
+  <circle class="blip" cx="10.6" cy="5.6" r="0.48" fill="#ffffff" stroke="none" opacity="0"/>
+  <circle cx="12" cy="12" r="0.7" stroke-width="0.35"/>
+  <circle cx="12" cy="12" r="0.22" fill="#ffffff" stroke="none"/>
 </svg></div>
         <div class="comp rgb" role="group" aria-label="RGB board. Slide R, G, and B to change the background." data-faces="top bottom" data-cid="l-rgb" data-links="l-sm l-kb" style="left:16px;top:83.8%"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 28" fill="none" stroke="#ffffff">
   <title>RGB board</title>
@@ -1811,7 +1829,7 @@ LinkedIn</p>
     <aside class="ribbon ribbon-right" aria-label="Right circuitry">
       <div class="circuit-board">
         <svg class="traces" aria-hidden="true"></svg>
-        <script type="application/json" class="wire-spec">[{"a":"r-sc","fa":"right","ta":0.5,"b":"r-wh","fb":"left","tb":0.22},{"a":"r-sc","fa":"bottom","ta":0.2,"b":"r-dp","fb":"top","tb":0.58,"via":[[48,8.6]]},{"a":"r-dp","fa":"right","ta":0.48,"b":"r-al","fb":"left","tb":0.18},{"a":"r-al","fa":"bottom","ta":0.78,"b":"r-hn","fb":"bottom","tb":0.72,"via":[[288,33.0],[288,47.2],[116,47.2]]},{"a":"r-hn","fa":"right","ta":0.48,"b":"r-dv","fb":"left","tb":0.5},{"a":"r-hn","fa":"left","ta":0.72,"b":"r-br","fb":"top","tb":0.48,"via":[[20,41.4],[20,55.2]]},{"a":"r-dv","fa":"bottom","ta":0.45,"b":"r-bw","fb":"right","tb":0.28,"via":[[226,49.2]]},{"a":"r-br","fa":"right","ta":0.5,"b":"r-ga","fb":"left","tb":0.12},{"a":"r-br","fa":"bottom","ta":0.48,"b":"r-tk","fb":"top","tb":0.18,"via":[[30,70.0]]},{"a":"r-bw","fa":"right","ta":0.55,"b":"r-bq","fb":"top","tb":0.4,"via":[[286,54.2],[286,70.4]]},{"a":"r-bq","fa":"bottom","ta":0.5,"b":"r-dt","fb":"right","tb":0.38,"via":[[286,82.2]]},{"a":"r-ga","fa":"right","ta":0.88,"b":"r-dt","fb":"top","tb":0.28,"via":[[208,80.6]]},{"a":"r-tk","fa":"bottom","ta":0.62,"b":"r-sl","fb":"left","tb":0.4},{"a":"r-dt","fa":"bottom","ta":0.28,"b":"r-sl","fb":"right","tb":0.52}]</script>
+        <script type="application/json" class="wire-spec">[{"a":"r-sc","fa":"right","ta":0.5,"b":"r-wh","fb":"left","tb":0.22},{"a":"r-sc","fa":"bottom","ta":0.2,"b":"r-dp","fb":"top","tb":0.58,"via":[[48,8.6]]},{"a":"r-dp","fa":"right","ta":0.48,"b":"r-al","fb":"left","tb":0.18},{"a":"r-al","fa":"bottom","ta":0.78,"b":"r-hn","fb":"bottom","tb":0.72,"via":[[288,33.0],[288,47.2],[116,47.2]]},{"a":"r-hn","fa":"right","ta":0.48,"b":"r-dv","fb":"left","tb":0.5},{"a":"r-hn","fa":"left","ta":0.72,"b":"r-br","fb":"top","tb":0.48,"via":[[20,41.4],[20,55.2]]},{"a":"r-dv","fa":"bottom","ta":0.45,"b":"r-bw","fb":"right","tb":0.28,"via":[[226,49.2]]},{"a":"r-br","fa":"right","ta":0.5,"b":"r-ga","fb":"left","tb":0.12},{"a":"r-br","fa":"bottom","ta":0.48,"b":"r-tk","fb":"top","tb":0.18,"via":[[30,70.0]]},{"a":"r-bw","fa":"right","ta":0.55,"b":"r-mx","fb":"top","tb":0.72,"via":[[286,54.2],[286,73.0]]},{"a":"r-mx","fa":"bottom","ta":0.62,"b":"r-dt","fb":"right","tb":0.38,"via":[[286,84.0]]},{"a":"r-ga","fa":"right","ta":0.88,"b":"r-dt","fb":"top","tb":0.28,"via":[[190,83.0]]},{"a":"r-tk","fa":"bottom","ta":0.62,"b":"r-sl","fb":"left","tb":0.4},{"a":"r-dt","fa":"bottom","ta":0.28,"b":"r-sl","fb":"right","tb":0.52}]</script>
         <div class="circuit circuit-right" style="width:302px">
         <button type="button" class="comp scope" aria-label="Oscilloscope, hold to increase sweep speed" data-cid="r-sc" data-links="r-wh r-dp" style="left:70px;top:1.4%"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 12" fill="none" stroke="#ffffff">
   <title>Oscilloscope</title>
@@ -1946,7 +1964,7 @@ LinkedIn</p>
   <circle cx="16" cy="16" r="0.75" stroke-width="0.35"/>
   <circle cx="16" cy="16" r="0.24" fill="#ffffff" stroke="none"/>
 </svg></div>
-        <button type="button" class="comp button button-wide" aria-label="Bar button" data-cid="r-bw" data-links="r-dv r-bq" style="left:162px;top:52.4%"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 14" fill="none" stroke="#ffffff">
+        <button type="button" class="comp button button-wide" aria-label="Bar button" data-cid="r-bw" data-links="r-dv r-mx" style="left:162px;top:52.4%"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 14" fill="none" stroke="#ffffff">
   <title>Bar button</title>
   <rect x="1.2" y="1.2" width="19.6" height="11.6" rx="0.5" stroke-width="0.45"/>
   <circle cx="3.1" cy="3.1" r="0.5" stroke-width="0.28"/>
@@ -2004,17 +2022,58 @@ LinkedIn</p>
   <circle class="peg" cx="34.4" cy="35" r="0.7" stroke-width="0.35"/>
   <circle class="ball" cx="20" cy="4.6" r="1.45" fill="#ffffff" stroke="#ffffff" stroke-width="0.3"/>
 </svg></div>
-        <button type="button" class="comp button" aria-label="Square button" data-cid="r-bq" data-links="r-bw r-dt" style="left:270px;top:73.2%"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="#ffffff">
-  <title>Square button</title>
-  <rect x="1.2" y="1.2" width="13.6" height="13.6" rx="0.5" stroke-width="0.45"/>
-  <circle cx="3.15" cy="3.15" r="0.55" stroke-width="0.3"/>
-  <circle cx="12.85" cy="3.15" r="0.55" stroke-width="0.3"/>
-  <circle cx="3.15" cy="12.85" r="0.55" stroke-width="0.3"/>
-  <circle cx="12.85" cy="12.85" r="0.55" stroke-width="0.3"/>
-  <rect x="3.4" y="3.4" width="9.2" height="9.2" rx="0.35" stroke-width="0.4"/>
-  <rect x="4.55" y="4.55" width="6.9" height="6.9" rx="0.25" stroke-width="0.3"/>
-  <rect class="face" x="5.55" y="5.55" width="4.9" height="4.9" rx="0.2" stroke-width="0.45"/>
-</svg></button>
+        <div class="comp mixer" role="group" aria-label="Mixer. Drag the four sliders." data-cid="r-mx" data-links="r-bw r-dt" style="left:198px;top:75.6%"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 34" fill="none" stroke="#ffffff">
+  <title>Mixer</title>
+  <rect x="1.2" y="1.2" width="45.6" height="31.6" rx="0.5" stroke-width="0.45"/>
+  <circle cx="3.1" cy="3.1" r="0.5" stroke-width="0.3"/>
+  <circle cx="44.9" cy="3.1" r="0.5" stroke-width="0.3"/>
+  <circle cx="3.1" cy="30.9" r="0.5" stroke-width="0.3"/>
+  <circle cx="44.9" cy="30.9" r="0.5" stroke-width="0.3"/>
+  <g class="fader" data-channel="1">
+    <circle cx="8" cy="4.4" r="1.15" stroke-width="0.35"/>
+    <line x1="8" y1="3.25" x2="8" y2="4.4" stroke-width="0.3"/>
+    <line class="track" x1="8" y1="6.4" x2="8" y2="29.2" stroke-width="0.4"/>
+    <line x1="6.7" y1="6.4" x2="9.3" y2="6.4" stroke-width="0.28"/>
+    <line x1="6.7" y1="29.2" x2="9.3" y2="29.2" stroke-width="0.28"/>
+    <line x1="7.2" y1="12" x2="8.8" y2="12" stroke-width="0.22"/>
+    <line x1="7.2" y1="17.8" x2="8.8" y2="17.8" stroke-width="0.22"/>
+    <line x1="7.2" y1="23.6" x2="8.8" y2="23.6" stroke-width="0.22"/>
+    <rect class="cap" x="5.7" y="16.6" width="4.6" height="2.4" stroke-width="0.4"/>
+  </g>
+  <g class="fader" data-channel="2">
+    <circle cx="18.7" cy="4.4" r="1.15" stroke-width="0.35"/>
+    <line x1="18.7" y1="3.25" x2="18.7" y2="4.4" stroke-width="0.3"/>
+    <line class="track" x1="18.7" y1="6.4" x2="18.7" y2="29.2" stroke-width="0.4"/>
+    <line x1="17.4" y1="6.4" x2="20" y2="6.4" stroke-width="0.28"/>
+    <line x1="17.4" y1="29.2" x2="20" y2="29.2" stroke-width="0.28"/>
+    <line x1="17.9" y1="12" x2="19.5" y2="12" stroke-width="0.22"/>
+    <line x1="17.9" y1="17.8" x2="19.5" y2="17.8" stroke-width="0.22"/>
+    <line x1="17.9" y1="23.6" x2="19.5" y2="23.6" stroke-width="0.22"/>
+    <rect class="cap" x="16.4" y="10.2" width="4.6" height="2.4" stroke-width="0.4"/>
+  </g>
+  <g class="fader" data-channel="3">
+    <circle cx="29.3" cy="4.4" r="1.15" stroke-width="0.35"/>
+    <line x1="29.3" y1="3.25" x2="29.3" y2="4.4" stroke-width="0.3"/>
+    <line class="track" x1="29.3" y1="6.4" x2="29.3" y2="29.2" stroke-width="0.4"/>
+    <line x1="28" y1="6.4" x2="30.6" y2="6.4" stroke-width="0.28"/>
+    <line x1="28" y1="29.2" x2="30.6" y2="29.2" stroke-width="0.28"/>
+    <line x1="28.5" y1="12" x2="30.1" y2="12" stroke-width="0.22"/>
+    <line x1="28.5" y1="17.8" x2="30.1" y2="17.8" stroke-width="0.22"/>
+    <line x1="28.5" y1="23.6" x2="30.1" y2="23.6" stroke-width="0.22"/>
+    <rect class="cap" x="27" y="15.4" width="4.6" height="2.4" stroke-width="0.4"/>
+  </g>
+  <g class="fader" data-channel="4">
+    <circle cx="40" cy="4.4" r="1.15" stroke-width="0.35"/>
+    <line x1="40" y1="3.25" x2="40" y2="4.4" stroke-width="0.3"/>
+    <line class="track" x1="40" y1="6.4" x2="40" y2="29.2" stroke-width="0.4"/>
+    <line x1="38.7" y1="6.4" x2="41.3" y2="6.4" stroke-width="0.28"/>
+    <line x1="38.7" y1="29.2" x2="41.3" y2="29.2" stroke-width="0.28"/>
+    <line x1="39.2" y1="12" x2="40.8" y2="12" stroke-width="0.22"/>
+    <line x1="39.2" y1="17.8" x2="40.8" y2="17.8" stroke-width="0.22"/>
+    <line x1="39.2" y1="23.6" x2="40.8" y2="23.6" stroke-width="0.22"/>
+    <rect class="cap" x="37.7" y="8.8" width="4.6" height="2.4" stroke-width="0.4"/>
+  </g>
+</svg></div>
         <button type="button" class="comp tank" aria-label="Fish tank. The fish is swimming." data-cid="r-tk" data-links="r-br r-sl" style="left:36px;top:81.4%"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 30" fill="none" stroke="#ffffff">
   <title>Fish tank</title>
   <rect class="frame" x="1.4" y="1.4" width="37.2" height="27.2" rx="0.45" stroke-width="0.45"/>
@@ -2034,7 +2093,7 @@ LinkedIn</p>
     <circle cx="2.2" cy="-0.35" r="0.32" fill="#ffffff" stroke="none"/>
   </g>
 </svg></button>
-        <div class="comp dial dial-temp" role="img" aria-label="Temperature dial." data-cid="r-dt" data-links="r-bq r-ga r-sl" style="left:194px;top:86.0%"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 22" fill="none" stroke="#ffffff">
+        <div class="comp dial dial-temp" role="img" aria-label="Temperature dial." data-cid="r-dt" data-links="r-mx r-ga r-sl" style="left:194px;top:86.0%"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 22" fill="none" stroke="#ffffff">
   <title>Temp dial</title>
   <rect x="1.3" y="1.3" width="19.4" height="19.4" rx="0.4" stroke-width="0.45"/>
   <circle cx="3.2" cy="3.2" r="0.42" stroke-width="0.28"/>
@@ -2079,6 +2138,6 @@ LinkedIn</p>
       </div>
     </aside>
   </div>
-  <script src="assets/circuit.js?v=chaos12"></script>
+  <script src="assets/circuit.js?v=chaos20"></script>
 </body>
 </html>
