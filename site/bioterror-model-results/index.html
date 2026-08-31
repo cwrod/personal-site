@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bioterror model results</title>
+    <link rel="stylesheet" href="static/styles.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="masthead">
+        <h1>Bioterror model results</h1>
+        <p class="lede">
+          <span id="combo-count">2,187</span> unique sets of presets were run for 10,000 runs.
+          Use this site to view results of these runs.
+        </p>
+      </header>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div class="panel-head-row">
+            <h2>Presets</h2>
+            <button type="button" class="ghost" id="clear-all">Clear all</button>
+          </div>
+          <p>Click a radiobutton on the left to plot all combinations split into low, medium, and high presets for that category. Select any number of other presets to bold points containing them.</p>
+        </div>
+        <div class="preset-rows" id="preset-rows"></div>
+      </section>
+
+      <section class="results">
+        <div class="panel-head">
+          <h2>Results</h2>
+          <p id="status" class="status" role="status"></p>
+        </div>
+        <div id="plot"></div>
+        <div id="delta-plots" class="delta-plots"></div>
+      </section>
+    </div>
+
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+    <script src="data.js"></script>
+    <script src="static/app.js"></script>
+  </body>
+</html>

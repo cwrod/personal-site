@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bioterror risk model</title>
+    <link rel="stylesheet" href="static/styles.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="masthead">
+        <p class="kicker">Simulation desk</p>
+        <h1>Bioterror risk model</h1>
+        <p class="lede">
+          Set the monthly attempt process, defense coverage, and pathogen mix.
+          Simulations run in this browser.
+        </p>
+      </header>
+
+      <form id="run-form">
+        <section class="panel">
+          <div class="panel-head">
+            <h2>Presets</h2>
+            <p>Choose one option in each row.</p>
+          </div>
+          <div class="preset-rows">
+            <fieldset class="preset-row" role="radiogroup" aria-label="Copycats">
+              <label class="preset-chip"><input type="radio" name="preset_copycats" value="none" checked /> No copycats</label>
+              <label class="preset-chip"><input type="radio" name="preset_copycats" value="10x" /> 10x copycats</label>
+              <label class="preset-chip"><input type="radio" name="preset_copycats" value="100x" /> 100x copycats</label>
+            </fieldset>
+            <fieldset class="preset-row" role="radiogroup" aria-label="Biodefense Response">
+              <label class="preset-chip"><input type="radio" name="preset_rush" value="none" checked /> No Biodefense Response</label>
+              <label class="preset-chip"><input type="radio" name="preset_rush" value="10x" /> 10x Biodefense Response</label>
+              <label class="preset-chip"><input type="radio" name="preset_rush" value="100x" /> 100x Biodefense Response</label>
+            </fieldset>
+            <fieldset class="preset-row" role="radiogroup" aria-label="Biodefense Baseline Budget">
+              <label class="preset-chip"><input type="radio" name="preset_biodefense" value="low" checked /> Low Biodefense Baseline Budget</label>
+              <label class="preset-chip"><input type="radio" name="preset_biodefense" value="10x" /> 10x Biodefense Baseline Budget</label>
+              <label class="preset-chip"><input type="radio" name="preset_biodefense" value="100x" /> 100x Biodefense Baseline Budget</label>
+            </fieldset>
+            <fieldset class="preset-row" role="radiogroup" aria-label="AI Progress">
+              <label class="preset-chip"><input type="radio" name="preset_ai_pace" value="pause" checked /> AI Pause</label>
+              <label class="preset-chip"><input type="radio" name="preset_ai_pace" value="pace" /> AI Pace</label>
+              <label class="preset-chip"><input type="radio" name="preset_ai_pace" value="race" /> AI Race</label>
+            </fieldset>
+            <fieldset class="preset-row" role="radiogroup" aria-label="AI uplift">
+              <label class="preset-chip"><input type="radio" name="preset_ai_uplift" value="none" checked /> No AI uplift</label>
+              <label class="preset-chip"><input type="radio" name="preset_ai_uplift" value="2x" /> 2x AI Uplift</label>
+              <label class="preset-chip"><input type="radio" name="preset_ai_uplift" value="10x" /> 10x AI Uplift</label>
+            </fieldset>
+            <fieldset class="preset-row" role="radiogroup" aria-label="Supervirus">
+              <label class="preset-chip"><input type="radio" name="preset_supervirus" value="none" checked /> No AI Supervirus</label>
+              <label class="preset-chip"><input type="radio" name="preset_supervirus" value="realistic" /> AI Realistic Supervirus</label>
+              <label class="preset-chip"><input type="radio" name="preset_supervirus" value="advanced" /> AI Advanced Supervirus</label>
+            </fieldset>
+            <fieldset class="preset-row" role="radiogroup" aria-label="Diffusion">
+              <label class="preset-chip"><input type="radio" name="preset_diffusion" value="1" checked /> 1 Month Diffusion</label>
+              <label class="preset-chip"><input type="radio" name="preset_diffusion" value="6" /> 6 Month Diffusion</label>
+              <label class="preset-chip"><input type="radio" name="preset_diffusion" value="12" /> 12 Month Diffusion</label>
+            </fieldset>
+          </div>
+        </section>
+
+        <section class="panel">
+        <div class="panel-head">
+          <h2>Parameters</h2>
+          <p>
+            Chance and coverage values are percents. Use the glossary below for formula variables and functions.
+          </p>
+        </div>
+        <details class="glossary">
+          <summary>Variable/Function names and definitions</summary>
+          <table>
+            <thead>
+              <tr>
+                <th>Variable</th>
+                <th>Definition</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><code>[time]</code></td><td>Month index starting at 1.</td></tr>
+              <tr><td><code>[prior_attack]</code></td><td>1 after a successful attack has already occurred in this simulation, otherwise 0.</td></tr>
+              <tr><td><code>[population]</code></td><td>Starting population entered in the form.</td></tr>
+              <tr><td><code>[ai]</code></td><td>AI capabilities this month, from the AI capabilities formula. Trends also shows this as a METR time horizon: 8 hours when capability is 1, 16 hours when capability is 2.</td></tr>
+              <tr><td><code>[ai_lag]</code></td><td>AI capabilities lagged by the AI lag amount (months). Usable in formulas. Trends also shows the lagged METR time horizon.</td></tr>
+              <tr><td><code>[ai_lag_amount]</code></td><td>How many months to lag AI capabilities. Set by the AI lag amount box. Shown on Trends; not usable in formulas yet.</td></tr>
+              <tr><td><code>[gdp_growth]</code></td><td>Annual GDP growth this month, in percent, from the GDP growth formula.</td></tr>
+              <tr><td><code>[gdp_prev]</code></td><td>Previous month's monthly GDP. Starts at 125e12/12.</td></tr>
+              <tr><td><code>[gdp]</code></td><td>Monthly GDP this month. Compounds [gdp_prev] by this month's annual growth rate.</td></tr>
+              <tr><td><code>[percent_spend]</code></td><td>Share of GDP spent on defense this month, in percent. Trends also shows defense spend as monthly GDP times this share.</td></tr>
+              <tr><td><code>[ppe_price]</code></td><td>Price of one unit of PPE.</td></tr>
+              <tr><td><code>[defense]</code></td><td>Defense coverage this month, in percent.</td></tr>
+              <tr><td><code>[attempt]</code></td><td>Chance an attack is attempted this month, in percent.</td></tr>
+              <tr><td><code>[success]</code></td><td>Chance a given attempt succeeds, in percent.</td></tr>
+            </tbody>
+          </table>
+          <table>
+            <thead>
+              <tr>
+                <th>Function</th>
+                <th>Definition</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><code>min(a, b, …)</code></td><td>Smallest argument.</td></tr>
+              <tr><td><code>max(a, b, …)</code></td><td>Largest argument.</td></tr>
+              <tr><td><code>abs(x)</code></td><td>Absolute value.</td></tr>
+              <tr><td><code>exp(x)</code></td><td>e raised to x.</td></tr>
+              <tr><td><code>log(x)</code></td><td>Natural logarithm.</td></tr>
+              <tr><td><code>sqrt(x)</code></td><td>Square root.</td></tr>
+              <tr><td><code>sigmoid(x, low, high, midpoint, steepness)</code></td><td>Logistic curve from low to high. Equals (high+low)/2 at x=midpoint. Larger steepness is a sharper rise.</td></tr>
+              <tr><td><code>asym(x, scale, speed)</code></td><td>Asymptotic curve scale * (1 - exp(-x / speed)). Approaches scale as x grows.</td></tr>
+            </tbody>
+          </table>
+        </details>
+
+        <div class="param-rows">
+          <div class="param-row">
+            <label>
+              <span>Months</span>
+              <input id="n_years" name="n_years" type="number" min="1" max="500" step="1" value="360" required />
+            </label>
+            <label>
+              <span>Simulations</span>
+              <input id="n_runs" name="n_runs" type="number" min="1" max="20000" step="1" value="1000" required />
+            </label>
+            <label>
+              <span>Population</span>
+              <input id="population" name="population" type="number" min="1" step="1" value="8000000000" required />
+            </label>
+            <label>
+              <span>Random seed</span>
+              <input id="seed" name="seed" type="number" min="0" step="1" value="0" required />
+            </label>
+          </div>
+          <div class="param-row">
+            <label class="wide">
+              <span>Attempt chance (% / month)</span>
+              <input id="attempt_prob_pct" name="attempt_prob_pct" type="text" value="0.5" required />
+            </label>
+            <label>
+              <span>Success chance (%)</span>
+              <input id="success_prob_pct" name="success_prob_pct" type="text" value="5" required />
+            </label>
+          </div>
+          <div class="param-row">
+            <label class="start-row">
+              <span>AI capabilities</span>
+              <input id="ai_capabilities" name="ai_capabilities" type="text" value="1" required />
+            </label>
+            <label>
+              <span>AI lag amount (months)</span>
+              <input id="ai_lag_amount" name="ai_lag_amount" type="number" min="0" max="500" step="1" value="1" required />
+            </label>
+            <label class="wide">
+              <span>GDP growth (%)</span>
+              <input id="gdp_growth" name="gdp_growth" type="text" value="2.5+87.5*(([ai]/720)^1.5)" required />
+            </label>
+          </div>
+          <div class="param-row">
+            <label class="start-row">
+              <span>Percent spend on defense (%)</span>
+              <input id="percent_spend" name="percent_spend" type="text" value="0.01" required />
+            </label>
+            <label class="wide">
+              <span>Defense coverage (%)</span>
+              <input id="annual_defense_increase_pct" name="annual_defense_increase_pct" type="text" value="(([percent_spend]/100)*[gdp]/[ppe_price])/[population]*100" required />
+            </label>
+            <label>
+              <span>PPE price</span>
+              <input id="ppe_price" name="ppe_price" type="text" value="100" required />
+            </label>
+          </div>
+        </div>
+
+        <div class="scenarios">
+          <div class="panel-head">
+            <h3>Pathogen mix</h3>
+            <p>After a successful attempt, a pathogen is drawn with probability weight / sum of weights. Weights can be formulas and do not need to add to 1.</p>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>R<sub>0</sub></th>
+                <th>Lethality (%)</th>
+                <th>Weight</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="scenario-rows"></tbody>
+          </table>
+          <button type="button" class="ghost" id="add-scenario">Add scenario</button>
+        </div>
+        </section>
+
+        <div class="run-bar">
+          <button type="submit" id="run-button">Run model</button>
+          <p id="status" class="status" role="status"></p>
+        </div>
+      </form>
+
+      <section id="results" class="results" hidden>
+        <div class="panel-head">
+          <h2>Results</h2>
+          <p id="output-path"></p>
+        </div>
+        <dl class="stats" id="stats"></dl>
+        <div class="plot-controls">
+          <label>
+            <span>Plot</span>
+            <select id="plot-type">
+              <option value="cumulative_distribution">Cumulative deaths distribution</option>
+              <option value="average_deaths_per_year">Average deaths per month</option>
+              <option value="attack_scatter">Attacks</option>
+              <option value="trends">Trends</option>
+              <option value="pathogen_mix">Pathogen mix</option>
+            </select>
+          </label>
+          <label id="sim-wrap" hidden>
+            <span>Simulation</span>
+            <select id="sim-select"></select>
+          </label>
+          <label id="x-axis-wrap" hidden>
+            <span>X axis</span>
+            <select id="x-axis">
+              <option value="r0" selected>R0</option>
+              <option value="lethality">Lethality</option>
+              <option value="year">Month</option>
+              <option value="deaths">Deaths</option>
+            </select>
+          </label>
+          <label id="y-axis-wrap" hidden>
+            <span>Y axis</span>
+            <select id="y-axis">
+              <option value="r0">R0</option>
+              <option value="lethality" selected>Lethality</option>
+              <option value="year">Month</option>
+              <option value="deaths">Deaths</option>
+            </select>
+          </label>
+        </div>
+        <div id="plot"></div>
+      </section>
+    </div>
+
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+    <script src="static/defaults.js"></script>
+    <script src="static/formulas.js"></script>
+    <script src="static/model.js"></script>
+    <script src="static/plots.js"></script>
+    <script src="static/app.js"></script>
+  </body>
+</html>

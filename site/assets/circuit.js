@@ -18,6 +18,16 @@
     };
   };
 
+  const clock = (start) => {
+    let last = start != null ? start : performance.now();
+    return (now) => {
+      const t = now == null ? performance.now() : now;
+      const dt = Math.min(0.05, Math.max(0, (t - last) / 1000));
+      last = t;
+      return dt * 60;
+    };
+  };
+
   const initChaos = () => {
     const BURST = 10;
     const TRICKLE_PER_SEC = 20;
@@ -156,8 +166,10 @@
     el.addEventListener("pointerup", up);
     el.addEventListener("pointercancel", up);
 
-    const frame = () => {
-      phase += holding ? 0.78 : 0.16;
+    const tock = clock();
+    const frame = (now) => {
+      const step = tock(now);
+      phase += (holding ? 0.78 : 0.16) * step;
       const points = [];
       for (let i = 0; i <= width; i += 1) {
         const x = x0 + i;
@@ -343,6 +355,7 @@
       const t = now == null ? performance.now() : now;
       const dt = Math.min(0.05, (t - lastTick) / 1000);
       lastTick = t;
+      const step = dt * 60;
       const pin = pinPos();
       const n = points.length;
       const following = isFollowing();
@@ -357,7 +370,7 @@
       }
 
       const taut = following && reach > BLOW_AT;
-      steam += ((taut ? 1 : 0) - steam) * (taut ? 0.28 : 0.08);
+      steam += ((taut ? 1 : 0) - steam) * (taut ? 0.28 : 0.08) * step;
       if (steam < 0.02) steam = 0;
       whistle.classList.toggle("blowing", steam > 0.12);
       setHorn(steam > 0.18);
@@ -373,12 +386,13 @@
           p.y = pointer.y;
           continue;
         }
-        const vx = (p.x - p.px) * DAMPING;
-        const vy = (p.y - p.py) * DAMPING;
+        const damp = Math.pow(DAMPING, step);
+        const vx = (p.x - p.px) * damp;
+        const vy = (p.y - p.py) * damp;
         p.px = p.x;
         p.py = p.y;
-        p.x += vx;
-        p.y += vy + GRAVITY;
+        p.x += vx * step;
+        p.y += (vy + GRAVITY) * step;
         energy += vx * vx + vy * vy;
       }
 
@@ -460,7 +474,7 @@
       ring.setAttribute("transform", `translate(${Math.round(tip.x)} ${Math.round(tip.y)})`);
 
       if (steam > 0) {
-        phase += 0.22 + steam * 0.28;
+        phase += (0.22 + steam * 0.28) * step;
         const reach = 7 + steam * 6;
         drawPuff(puffs[0], 11.2, 12.2, phase, reach, -0.4);
         drawPuff(puffs[1], 11.2, 11.6, phase + 1.1, reach * 0.88, -1.8);
@@ -759,15 +773,17 @@
       }
     };
 
-    const frame = () => {
+    const tock = clock();
+    const frame = (now) => {
       raf = 0;
       if (dragging) return;
+      const step = tock(now);
 
-      ball.vy += G;
-      ball.vx *= DAMP;
-      ball.vy *= DAMP;
-      ball.x += ball.vx;
-      ball.y += ball.vy;
+      ball.vy += G * step;
+      ball.vx *= Math.pow(DAMP, step);
+      ball.vy *= Math.pow(DAMP, step);
+      ball.x += ball.vx * step;
+      ball.y += ball.vy * step;
       collidePegs();
       collideBins();
       confine(true);
@@ -1066,7 +1082,9 @@
     ball.addEventListener("pointerup", up);
     ball.addEventListener("pointercancel", up);
 
-    const frame = () => {
+    const tock = clock();
+    const frame = (now) => {
+      const step = tock(now);
       let attract = null;
       let reachTo = 0;
       if (touching) {
@@ -1081,13 +1099,13 @@
       }
 
       filaments.forEach((f, i) => {
-        f.angle += f.spin;
+        f.angle += f.spin * step;
         const idle = attract == null;
-        if (idle && (i >= 6 || Math.random() < 0.14)) {
+        if (idle && (i >= 6 || Math.random() < 0.14 * step)) {
           bolts[i].setAttribute("d", "");
           return;
         }
-        if (!idle && Math.random() < 0.04) {
+        if (!idle && Math.random() < 0.04 * step) {
           bolts[i].setAttribute("d", "");
           return;
         }
@@ -1129,9 +1147,11 @@
     let phase = 0;
     let retarget = 90;
 
-    const frame = () => {
-      phase += 0.08;
-      retarget -= 1;
+    const tock = clock();
+    const frame = (now) => {
+      const step = tock(now);
+      phase += 0.08 * step;
+      retarget -= step;
       if (retarget <= 0) {
         vx += (Math.random() - 0.5) * 0.04;
         vy += (Math.random() - 0.5) * 0.03;
@@ -1145,8 +1165,8 @@
         }
         retarget = 70 + Math.floor(Math.random() * 90);
       }
-      x += vx;
-      y += vy + Math.sin(phase) * 0.012;
+      x += vx * step;
+      y += (vy + Math.sin(phase) * 0.012) * step;
       if (x < MIN_X) {
         x = MIN_X;
         vx = Math.abs(vx);
@@ -1188,17 +1208,19 @@
     const idle = Math.min(0.08, rest * 0.18);
     let t = hash01(dial.getAttribute("data-cid") || "dial") * 40;
     let shown = idle;
-    const frame = () => {
+    const tock = clock();
+    const frame = (now) => {
+      const step = tock(now);
       const c = Math.min(1, Math.max(0, getChaos() / 100));
       const drive = c * c;
-      t += rate * (0.25 + drive * 7);
+      t += rate * (0.25 + drive * 7) * step;
       const target = idle + (0.94 - idle) * drive;
       const wiggle =
         Math.sin(t) * wander * (0.08 + drive * 2.4) +
         Math.sin(t * 2.4) * jitter * drive * 5 +
         Math.sin(t * 13) * 0.09 * drive * drive;
       const goal = Math.min(1, Math.max(0, target + wiggle));
-      shown += (goal - shown) * (0.045 + drive * 0.22);
+      shown += (goal - shown) * (0.045 + drive * 0.22) * step;
       const angle = start + shown * sweep;
       needle.setAttribute("transform", `rotate(${angle.toFixed(2)} ${cx} ${cy})`);
       requestAnimationFrame(frame);
@@ -1364,16 +1386,18 @@
 
     box.addEventListener("pointerdown", down);
 
-    const frame = () => {
-      quake *= 0.935;
+    const tock = clock();
+    const frame = (now) => {
+      const step = tock(now);
+      quake *= Math.pow(0.935, step);
       if (quake < 0.02) quake = 0;
       const jitter = (Math.random() * 2 - 1) * (0.12 + quake * 3.6);
       const spike = Math.sin(performance.now() / 18) * quake * 1.8;
       const y = Math.min(BOTTOM, Math.max(TOP, MID + jitter + spike));
       samples.push(y);
       samples.shift();
-      const step = (X1 - X0) / (COUNT - 1);
-      const parts = samples.map((sample, i) => `${(X0 + i * step).toFixed(2)},${sample.toFixed(2)}`);
+      const gap = (X1 - X0) / (COUNT - 1);
+      const parts = samples.map((sample, i) => `${(X0 + i * gap).toFixed(2)},${sample.toFixed(2)}`);
       trace.setAttribute("d", `M${parts.join("L")}`);
       requestAnimationFrame(frame);
     };
@@ -1521,7 +1545,7 @@
 
     const SEGMENTS = 10;
     const LENGTH = 38;
-    const GRAVITY = 0.48;
+    const GRAVITY = 2.7;
     const DAMPING = 0.982;
     const ITERATIONS = 5;
 
@@ -1548,7 +1572,7 @@
     handle.setAttribute("y", "-4");
     handle.setAttribute("width", "2.4");
     handle.setAttribute("height", "18");
-    handle.setAttribute("fill", "transparent");
+    handle.setAttribute("fill", "#ffffff");
     handle.setAttribute("stroke", "#ffffff");
     handle.setAttribute("stroke-width", "1.1");
     hammer.appendChild(handle);
@@ -1558,7 +1582,7 @@
     head.setAttribute("y", "-8");
     head.setAttribute("width", "16");
     head.setAttribute("height", "7");
-    head.setAttribute("fill", "transparent");
+    head.setAttribute("fill", "#ffffff");
     head.setAttribute("stroke", "#ffffff");
     head.setAttribute("stroke-width", "1.15");
     hammer.appendChild(head);
@@ -1567,7 +1591,7 @@
     peen.setAttribute("y", "-6.2");
     peen.setAttribute("width", "5");
     peen.setAttribute("height", "3.4");
-    peen.setAttribute("fill", "transparent");
+    peen.setAttribute("fill", "#ffffff");
     peen.setAttribute("stroke", "#ffffff");
     peen.setAttribute("stroke-width", "1");
     hammer.appendChild(peen);
@@ -1795,8 +1819,10 @@
     lever.addEventListener("pointerup", endPull);
     lever.addEventListener("pointercancel", endPull);
 
-    const frame = () => {
+    const tock = clock();
+    const frame = (now) => {
       raf = 0;
+      const step = tock(now);
       syncLayer();
       const pin = pinPos();
       const n = points.length;
@@ -1816,12 +1842,13 @@
           p.y = pointer.y;
           continue;
         }
-        const vx = (p.x - p.px) * DAMPING;
-        const vy = (p.y - p.py) * DAMPING;
+        const damp = Math.pow(DAMPING, step);
+        const vx = (p.x - p.px) * damp;
+        const vy = (p.y - p.py) * damp;
         p.px = p.x;
         p.py = p.y;
-        p.x += vx;
-        p.y += vy + GRAVITY;
+        p.x += vx * step;
+        p.y += (vy + GRAVITY) * step;
         energy += vx * vx + vy * vy;
       }
 
@@ -1875,11 +1902,11 @@
       }
 
       shards = shards.filter((shard) => {
-        shard.vy += 1.15;
-        shard.vx *= 0.992;
-        shard.x += shard.vx;
-        shard.y += shard.vy;
-        shard.rot += shard.vr;
+        shard.vy += 1.15 * step;
+        shard.vx *= Math.pow(0.992, step);
+        shard.x += shard.vx * step;
+        shard.y += shard.vy * step;
+        shard.rot += shard.vr * step;
         shard.el.setAttribute(
           "transform",
           `translate(${shard.x.toFixed(1)} ${shard.y.toFixed(1)}) rotate(${shard.rot.toFixed(1)})`,
@@ -1892,7 +1919,7 @@
       });
 
       if (latched) {
-        spin = (spin + 6.5) % 360;
+        spin = (spin + 6.5 * step) % 360;
         rotor.setAttribute("transform", `rotate(${spin.toFixed(1)} ${ROTOR_X} ${ROTOR_Y})`);
       }
 
@@ -2221,7 +2248,7 @@ in the server error log.</p>
       document.close();
     };
 
-    const stepFire = () => {
+    const stepFire = (step) => {
       if (!fire) return;
       const { ctx, parts } = fire;
       const w = window.innerWidth;
@@ -2243,10 +2270,10 @@ in the server error log.</p>
       ctx.globalCompositeOperation = "lighter";
       for (let i = parts.length - 1; i >= 0; i -= 1) {
         const p = parts[i];
-        p.x += p.vx;
-        p.y += p.vy;
-        p.vy -= 0.018;
-        p.life -= p.decay;
+        p.x += p.vx * step;
+        p.y += p.vy * step;
+        p.vy -= 0.018 * step;
+        p.life -= p.decay * step;
         if (p.life <= 0 || p.y < -20) {
           parts.splice(i, 1);
           continue;
@@ -2268,6 +2295,7 @@ in the server error log.</p>
       const t = now || performance.now();
       const dt = Math.min(0.05, (t - last) / 1000);
       last = t;
+      const step = dt * 60;
       if (arcing) {
         edgeCool -= dt;
         if (edgeCool <= 0) {
@@ -2277,13 +2305,13 @@ in the server error log.</p>
         }
       }
       sparks = sparks.filter((spark) => {
-        spark.reach += (spark.maxReach - spark.reach) * 0.32;
-        spark.life -= spark.fade || 0.032;
+        spark.reach += (spark.maxReach - spark.reach) * 0.32 * step;
+        spark.life -= (spark.fade || 0.032) * step;
         if (spark.life <= 0) {
           spark.el.remove();
           return false;
         }
-        if (Math.random() < 0.12) spark.el.setAttribute("d", "");
+        if (Math.random() < 0.12 * step) spark.el.setAttribute("d", "");
         else {
           spark.el.setAttribute(
             "d",
@@ -2295,11 +2323,11 @@ in the server error log.</p>
       });
 
       if (flyer) {
-        flyer.vy += 1.15;
-        flyer.vx *= 0.992;
-        flyer.x += flyer.vx;
-        flyer.y += flyer.vy;
-        flyer.rot += flyer.vr;
+        flyer.vy += 1.15 * step;
+        flyer.vx *= Math.pow(0.992, step);
+        flyer.x += flyer.vx * step;
+        flyer.y += flyer.vy * step;
+        flyer.rot += flyer.vr * step;
         placePlate(flyer);
         if (flyer.y > window.innerHeight + 80) {
           flyer.el.remove();
@@ -2307,7 +2335,7 @@ in the server error log.</p>
         }
       }
 
-      stepFire();
+      stepFire(step);
       if (sparks.length || flyer || fire || arcing) kick();
     };
 
@@ -2644,4 +2672,56 @@ in the server error log.</p>
   };
 
   initGridFeeds();
+
+  const initFpsHud = () => {
+    const hud = document.querySelector(".fps-hud");
+    const value = hud && hud.querySelector(".fps-value");
+    const canvas = hud && hud.querySelector(".fps-plot");
+    if (!hud || !value || !canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const W = canvas.width;
+    const H = canvas.height;
+    const MAX = 90;
+    const samples = [];
+    let last = performance.now();
+    let shown = 0;
+
+    const frame = (now) => {
+      const dt = now - last;
+      last = now;
+      const fps = dt > 0 ? 1000 / dt : 0;
+      samples.push(Math.min(120, fps));
+      if (samples.length > MAX) samples.shift();
+      shown += (fps - shown) * 0.18;
+      value.textContent = String(Math.round(shown));
+
+      ctx.clearRect(0, 0, W, H);
+      ctx.strokeStyle = "rgba(255,255,255,0.22)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      const mid = Math.round(H * (1 - 60 / 120));
+      ctx.moveTo(0, mid);
+      ctx.lineTo(W, mid);
+      ctx.stroke();
+
+      if (samples.length > 1) {
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        samples.forEach((sample, i) => {
+          const x = (i / (MAX - 1)) * (W - 1);
+          const y = H - 1 - (sample / 120) * (H - 2);
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+      }
+      requestAnimationFrame(frame);
+    };
+    requestAnimationFrame(frame);
+  };
+
+  initFpsHud();
 })();

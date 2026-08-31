@@ -589,6 +589,32 @@ body {
   stroke: #062406;
 }
 
+.fps-hud {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  z-index: 30;
+  pointer-events: none;
+  min-width: 148px;
+  padding: 6px 7px 5px;
+  background: #000000;
+  border: 1px solid var(--line);
+  color: var(--text);
+  font-family: "Press Start 2P", "Courier New", Courier, monospace;
+  font-size: 8px;
+  line-height: 1.4;
+}
+
+.fps-readout {
+  margin-bottom: 4px;
+}
+
+.fps-plot {
+  display: block;
+  width: 140px;
+  height: 36px;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
