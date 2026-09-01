@@ -204,6 +204,78 @@ code {
   outline-offset: 1px;
 }
 
+.glossary {
+  margin: 0 0 1rem;
+  border: 1px solid var(--rule);
+  background: #fff;
+}
+
+.glossary summary {
+  cursor: pointer;
+  padding: 0.55rem 0.75rem;
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+  list-style: none;
+}
+
+.glossary summary::-webkit-details-marker {
+  display: none;
+}
+
+.glossary summary::after {
+  content: "▾";
+  float: right;
+  color: var(--ink);
+}
+
+.glossary[open] summary::after {
+  content: "▴";
+}
+
+.glossary table {
+  width: calc(100% - 1.5rem);
+  margin: 0 0.75rem 0.65rem;
+  border-collapse: collapse;
+}
+
+.glossary th,
+.glossary td {
+  text-align: left;
+  padding: 0.45rem 0.75rem 0.45rem 0;
+  vertical-align: top;
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.glossary th {
+  color: var(--muted);
+  font-weight: 600;
+  border-bottom: 1px solid var(--rule);
+}
+
+.glossary td {
+  border-bottom: 1px solid var(--rule);
+}
+
+.glossary tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.glossary td:first-child,
+.glossary th:first-child {
+  width: 12.5rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.glossary th:first-child {
+  font-weight: 600;
+  color: var(--muted);
+}
+
 .status {
   margin: 0;
   color: var(--muted);

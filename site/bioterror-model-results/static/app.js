@@ -548,6 +548,22 @@ async function renderPlot() {
   }
 }
 
+function renderDefinitions() {
+  const host = document.getElementById("definitions");
+  if (!host) return;
+  host.innerHTML = (defaults.categories || [])
+    .filter((category) => category.definition || category.level_note)
+    .map(
+      (category) => `
+        <tr>
+          <td>${escapeHtml(category.label || category.name)}</td>
+          <td>${escapeHtml(category.definition || "")}</td>
+          <td>${escapeHtml(category.level_note || "")}</td>
+        </tr>`
+    )
+    .join("");
+}
+
 function renderRows() {
   rowsEl.innerHTML = defaults.categories
     .map((category, index) => {
@@ -624,6 +640,7 @@ if (!defaults.has_sweep || !defaults.plots) {
   statusEl.classList.add("error");
   statusEl.textContent = "Run python site_preset_sweep_client/build.py after scripts/preset_sweep.py.";
 } else {
+  renderDefinitions();
   renderRows();
   bindControls();
   applyRowSelection(selectedCategory());
