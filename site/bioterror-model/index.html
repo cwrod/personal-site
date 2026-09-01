@@ -4,8 +4,6 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Bioterror risk model</title>
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <link rel="icon" href="/favicon.ico" sizes="32x32" />
     <link rel="stylesheet" href="static/styles.css" />
   </head>
   <body>
@@ -24,6 +22,19 @@
             <h2>Presets</h2>
             <p>Choose one option in each row.</p>
           </div>
+          <details class="glossary preset-definitions">
+            <summary>Definitions</summary>
+            <table>
+              <thead>
+                <tr>
+                  <th>Category</th>
+                  <th>Definition</th>
+                  <th>Levels</th>
+                </tr>
+              </thead>
+              <tbody id="preset-definitions"></tbody>
+            </table>
+          </details>
           <div class="preset-rows">
             <fieldset class="preset-row" role="radiogroup" aria-label="Copycats">
               <label class="preset-chip"><input type="radio" name="preset_copycats" value="none" checked /> No copycats</label>

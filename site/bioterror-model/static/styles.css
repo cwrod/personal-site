@@ -87,6 +87,10 @@ code {
   background: #fff;
 }
 
+.preset-definitions {
+  margin: 0 0 1.15rem;
+}
+
 .glossary summary {
   cursor: pointer;
   padding: 0.55rem 0.75rem;
@@ -122,6 +126,11 @@ code {
 .glossary td {
   padding: 0.4rem 0.75rem 0.4rem 0;
   vertical-align: top;
+}
+
+.glossary th {
+  color: var(--muted);
+  font-weight: 600;
 }
 
 .glossary td:first-child,

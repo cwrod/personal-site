@@ -6,6 +6,31 @@ if (!formDefaults) {
   statusEl.textContent = "Missing static/defaults.js. Run: .venv/bin/python site_client/build.py";
   return;
 }
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function renderDefinitions() {
+  const host = document.getElementById("preset-definitions");
+  if (!host) return;
+  host.innerHTML = (formDefaults.definitions || [])
+    .map(
+      (item) => `
+        <tr>
+          <td>${escapeHtml(item.label || "")}</td>
+          <td>${escapeHtml(item.definition || "")}</td>
+          <td>${escapeHtml(item.level_note || "")}</td>
+        </tr>`
+    )
+    .join("");
+}
+
+renderDefinitions();
+
 const form = document.getElementById("run-form");
 const rows = document.getElementById("scenario-rows");
 const addButton = document.getElementById("add-scenario");
