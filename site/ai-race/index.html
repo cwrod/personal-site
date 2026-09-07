@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI-race · two players</title>
+  <style>
+    :root {
+      --ink: #1a1a1a;
+      --muted: #666;
+      --bg: #fff;
+      --panel: #f7f7f5;
+      --line: #ddd;
+      --you: #1f4e79;
+      --them: #38761d;
+      --warn: #990000;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "DejaVu Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    }
+    .page {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 22px 20px 48px;
+    }
+    h1 {
+      font-size: 20px;
+      font-weight: 600;
+      margin: 0 0 6px;
+    }
+    h2 {
+      font-size: 15px;
+      font-weight: 600;
+      margin: 0 0 10px;
+    }
+    .lede, .hint, .error {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+      margin: 0 0 18px;
+    }
+    .error { color: var(--warn); }
+    .hidden { display: none !important; }
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .choice {
+      appearance: none;
+      border: 1px solid #111;
+      background: #fff;
+      color: var(--ink);
+      padding: 8px 12px;
+      font: inherit;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .choice.selected {
+      background: var(--ink);
+      color: #fff;
+    }
+    .choice:disabled {
+      opacity: 0.45;
+      cursor: default;
+    }
+    .scenarios {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+      gap: 8px;
+      margin: 8px 0 18px;
+    }
+    .scenario {
+      text-align: left;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      padding: 10px 12px;
+      cursor: pointer;
+      font: inherit;
+    }
+    .scenario.selected {
+      border-color: #111;
+      background: #fff;
+    }
+    .scenario strong {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+    .scenario span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+    .block { margin: 0 0 18px; }
+    button.primary, button.secondary {
+      font: inherit;
+      font-size: 13px;
+      padding: 8px 14px;
+      cursor: pointer;
+      border: 1px solid #111;
+    }
+    button.primary {
+      background: var(--ink);
+      color: #fff;
+    }
+    button.secondary { background: #fff; }
+    button:disabled {
+      opacity: 0.45;
+      cursor: default;
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+    @media (max-width: 800px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+    .panel {
+      background: var(--panel);
+      padding: 14px 16px;
+    }
+    .meta {
+      font-size: 13px;
+      color: var(--muted);
+      margin: 0 0 14px;
+    }
+    .share {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin: 0 0 14px;
+      font-size: 13px;
+    }
+    .share input {
+      flex: 1 1 220px;
+      font: inherit;
+      font-size: 13px;
+      padding: 8px;
+      border: 1px solid #111;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    th, td {
+      text-align: left;
+      padding: 4px 6px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+    }
+    th { color: var(--muted); font-weight: 600; }
+    tr.current td { font-weight: 600; }
+    .payoff {
+      font-size: 14px;
+      margin: 0 0 8px;
+    }
+    .payoff b { font-weight: 600; }
+    .thread {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 80px;
+    }
+    .bubble {
+      border: 1px solid var(--line);
+      background: #fff;
+      padding: 10px 12px;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+    .bubble.you { border-left: 3px solid var(--you); }
+    .bubble.them { border-left: 3px solid var(--them); }
+    .bubble.note, .bubble.resolution {
+      color: var(--muted);
+      background: transparent;
+      border-style: dashed;
+    }
+    .bubble.result {
+      border-color: #111;
+      font-weight: 600;
+    }
+    .who {
+      font-size: 11px;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    .msg { margin-top: 6px; font-style: italic; }
+    .actions label {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      margin: 10px 0 4px;
+    }
+    textarea, select {
+      width: 100%;
+      font: inherit;
+      font-size: 13px;
+      padding: 8px;
+      border: 1px solid #111;
+      background: #fff;
+    }
+    textarea { min-height: 72px; resize: vertical; }
+    .deal-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    details.rules {
+      margin: 0 0 16px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    details.rules summary { cursor: pointer; color: var(--ink); }
+    details.rules p { margin: 8px 0 0; line-height: 1.45; }
+    .waiting { color: var(--muted); font-size: 13px; }
+    .join-code {
+      width: 8em;
+      font: inherit;
+      font-size: 16px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 8px;
+      border: 1px solid #111;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <section id="setup">
+      <h1>AI-race · two players</h1>
+      <p class="lede">Same rules as the lead/lag tournament. Create a room, send the link, and both of you lock in moves at the same time. No AI.</p>
+      <details class="rules">
+        <summary>How the game works</summary>
+        <p>Each timestep you may first-strike, offer a pause treaty, or pass. A first strike ends the game: the striker scores bonus plus the current second-strike penalty, and the victim scores −100. If both strike, lead goes first. A pause deal must be on the grid (0, 0) through (5, −50). The other player may accept, counter once, or reject. After a counter, only accept or reject remains. If both offer, the lead player’s deal is presented. Mutual passes move time forward. A stay-in bonus is always on: when the game ends, both players receive extra points equal to the ending timestep (0-indexed).</p>
+      </details>
+      <div class="block">
+        <h2>Your role</h2>
+        <div class="row" id="roles">
+          <button type="button" class="choice selected" data-role="lead">Lead</button>
+          <button type="button" class="choice" data-role="lag">Lag</button>
+        </div>
+        <p class="hint">The person who opens your link takes the other seat.</p>
+      </div>
+      <div class="block">
+        <h2>Scenario</h2>
+        <div class="scenarios" id="scenarios"></div>
+      </div>
+      <div class="row">
+        <button type="button" class="primary" id="create">Create room</button>
+      </div>
+      <div class="block" style="margin-top:22px">
+        <h2>Or join a room</h2>
+        <div class="row">
+          <input class="join-code" id="join-code" maxlength="8" placeholder="ABCD" autocomplete="off">
+          <button type="button" class="secondary" id="join">Join</button>
+        </div>
+      </div>
+      <p class="error hidden" id="setup-error"></p>
+    </section>
+
+    <section id="game" class="hidden">
+      <h1 id="game-title">Game</h1>
+      <p class="meta" id="game-meta"></p>
+      <div class="share" id="share">
+        <input id="share-url" readonly>
+        <button type="button" class="secondary" id="copy-link">Copy link</button>
+      </div>
+      <div class="layout">
+        <div>
+          <div class="panel">
+            <h2>Current payoffs</h2>
+            <div id="payoffs"></div>
+            <div id="trajectory"></div>
+          </div>
+        </div>
+        <div>
+          <div class="panel">
+            <h2>Negotiation</h2>
+            <div class="thread" id="thread"></div>
+            <p class="waiting hidden" id="waiting"></p>
+            <p class="error hidden" id="game-error"></p>
+            <form id="move-form" class="actions">
+              <p class="hint" id="prompt"></p>
+              <div class="row" id="move-actions"></div>
+              <div id="deal-wrap" class="hidden">
+                <label for="deal">Deal (lead, lag)</label>
+                <div class="deal-grid" id="deals"></div>
+              </div>
+              <label for="message">Message</label>
+              <textarea id="message" placeholder="Optional message attached to this move"></textarea>
+              <div class="row" style="margin-top:10px">
+                <button type="submit" class="primary" id="submit">Send</button>
+                <button type="button" class="secondary" id="again">New game</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+// Set this to your Render URL when this page is on cwrodriguez.com/ai-race.
+// Leave empty when served by serve_play.py (same origin).
+const PLAY_API = "";
+
+const setupEl = document.getElementById("setup");
+const gameEl = document.getElementById("game");
+const scenariosEl = document.getElementById("scenarios");
+const setupError = document.getElementById("setup-error");
+const gameError = document.getElementById("game-error");
+const waitingEl = document.getElementById("waiting");
+const form = document.getElementById("move-form");
+
+const state = {
+  role: "lead",
+  version: "",
+  room: "",
+  token: "",
+  setup: null,
+  payload: null,
+  action: "pass",
+  deal: null,
+  pollTimer: null,
+};
+
+function showError(el, text) {
+  el.textContent = text || "";
+  el.classList.toggle("hidden", !text);
+}
+
+function selectChoice(container, attr, value) {
+  for (const btn of container.querySelectorAll(".choice, .scenario")) {
+    btn.classList.toggle("selected", btn.dataset[attr] === value);
+  }
+}
+
+function dealKey(deal) {
+  if (!deal) return "";
+  if (Array.isArray(deal)) return `${deal[0]},${deal[1]}`;
+  return `${deal.lead},${deal.lag}`;
+}
+
+function formatDeal(deal) {
+  if (!deal) return "";
+  if (Array.isArray(deal)) return `(${deal[0]}, ${deal[1]})`;
+  return `(${deal.lead}, ${deal.lag})`;
+}
+
+function actionLabel(action) {
+  return {
+    first_strike: "First strike",
+    offer_pause: "Offer pause",
+    pass: "Pass",
+    accept: "Accept",
+    counter: "Counter",
+    reject: "Reject",
+  }[action] || action;
+}
+
+function shareUrl(room) {
+  const url = new URL(window.location.href);
+  url.searchParams.set("room", room);
+  return url.toString();
+}
+
+function storageKey(room) {
+  return `play:${room}`;
+}
+
+function rememberSeat(room, token, role) {
+  sessionStorage.setItem(storageKey(room), JSON.stringify({ token, role }));
+}
+
+function recalledSeat(room) {
+  try {
+    return JSON.parse(sessionStorage.getItem(storageKey(room)) || "null");
+  } catch {
+    return null;
+  }
+}
+
+async function api(path, options = {}) {
+  const timeoutMs = options.timeoutMs || 20000;
+  const headers = { ...(options.headers || {}) };
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+  try {
+    const res = await fetch(`${PLAY_API}${path}`, { ...options, headers, signal: ctrl.signal });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || res.statusText);
+    return data;
+  } catch (err) {
+    if (err.name === "AbortError") {
+      throw new Error("The server is waking up or unreachable. Try again in a moment.");
+    }
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+function renderSetup(payload) {
+  state.setup = payload;
+  scenariosEl.replaceChildren();
+  for (const version of payload.versions) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "scenario";
+    btn.dataset.version = version.name;
+    const title = document.createElement("strong");
+    title.textContent = version.label;
+    const blurb = document.createElement("span");
+    blurb.textContent = `${version.blurb} ${version.notes.join(" ")}`;
+    btn.append(title, blurb);
+    btn.addEventListener("click", () => {
+      state.version = version.name;
+      selectChoice(scenariosEl, "version", version.name);
+    });
+    scenariosEl.append(btn);
+  }
+  if (payload.versions.length) {
+    state.version = payload.versions[0].name;
+    selectChoice(scenariosEl, "version", state.version);
+  }
+}
+
+function renderPayoffs(game) {
+  const vis = game.visible;
+  const youLead = game.human_role === "lead";
+  const payoffs = document.getElementById("payoffs");
+  payoffs.replaceChildren();
+  const lines = [
+    `Timestep ${vis.timestep} of ${vis.n_timesteps - 1}.`,
+    `First-strike bonuses: lead +${vis.lead_bonus}, lag +${vis.lag_bonus}.`,
+    `Second-strike penalties: lead ${vis.lead_penalty}, lag ${vis.lag_penalty}.`,
+    `If lead strikes now: lead ${vis.if_lead_strikes.lead}, lag ${vis.if_lead_strikes.lag}.`,
+    `If lag strikes now: lead ${vis.if_lag_strikes.lead}, lag ${vis.if_lag_strikes.lag}.`,
+  ];
+  if (vis.stayin_bonus) {
+    lines.splice(2, 0,
+      `Stay-in bonus: +${vis.stayin_bonus} per timestep to both players when the game ends. If it ends now, both scores increase by +${vis.stayin_if_end || 0}.`
+    );
+  }
+  for (const line of lines) {
+    const p = document.createElement("p");
+    p.className = "payoff";
+    p.textContent = line;
+    payoffs.append(p);
+  }
+  const yours = youLead ? vis.if_lead_strikes.lead : vis.if_lag_strikes.lag;
+  const theirs = youLead ? vis.if_lead_strikes.lag : vis.if_lag_strikes.lead;
+  const note = document.createElement("p");
+  note.className = "payoff";
+  note.innerHTML = `If you strike now: you <b>${yours}</b>, opponent <b>${theirs}</b>.`;
+  payoffs.append(note);
+
+  const box = document.getElementById("trajectory");
+  box.replaceChildren();
+  if (!vis.trajectory) {
+    const p = document.createElement("p");
+    p.className = "hint";
+    p.textContent = "You observe only the current payoffs.";
+    box.append(p);
+    return;
+  }
+  const hint = document.createElement("p");
+  hint.className = "hint";
+  hint.textContent = game.version.info === "complete"
+    ? "Full payoff path, including future timesteps."
+    : "Payoffs from the start through this timestep. Future timesteps are hidden.";
+  box.append(hint);
+  const table = document.createElement("table");
+  table.innerHTML = "<thead><tr><th>t</th><th>Lead pen.</th><th>Lag pen.</th><th>Stay-in</th><th>Lead strikes</th><th>Lag strikes</th></tr></thead>";
+  const body = document.createElement("tbody");
+  for (const row of vis.trajectory) {
+    const tr = document.createElement("tr");
+    if (row.timestep === vis.timestep) tr.className = "current";
+    const stay = row.stayin_if_end != null ? `+${row.stayin_if_end}` : "—";
+    tr.innerHTML = `<td>${row.timestep}${row.timestep === vis.timestep ? " ←" : ""}</td>
+      <td>${row.lead_penalty}</td><td>${row.lag_penalty}</td>
+      <td>${stay}</td>
+      <td>(${row.if_lead_strikes.lead}, ${row.if_lead_strikes.lag})</td>
+      <td>(${row.if_lag_strikes.lead}, ${row.if_lag_strikes.lag})</td>`;
+    body.append(tr);
+  }
+  table.append(body);
+  box.append(table);
+}
+
+function renderThread(game) {
+  const box = document.getElementById("thread");
+  box.replaceChildren();
+  if (!game.thread.length && game.phase !== "done") {
+    const empty = document.createElement("div");
+    empty.className = "bubble note";
+    empty.textContent = "No public moves yet. Choose an action for this timestep.";
+    box.append(empty);
+  }
+  for (const item of game.thread) {
+    const div = document.createElement("div");
+    const side = item.is_you ? "you" : item.actor ? "them" : item.kind;
+    div.className = `bubble ${side}`;
+    if (item.kind === "offer" || item.kind === "reply" || item.kind === "action") {
+      const who = document.createElement("div");
+      who.className = "who";
+      who.textContent = `${item.label} · t=${item.timestep}`;
+      const body = document.createElement("div");
+      const verb = item.kind === "offer" ? "offered" : actionLabel(item.action || "offered").toLowerCase();
+      body.textContent = item.deal ? `${verb} ${formatDeal(item.deal)}` : verb;
+      div.append(who, body);
+      if (item.message) {
+        const msg = document.createElement("div");
+        msg.className = "msg";
+        msg.textContent = `“${item.message}”`;
+        div.append(msg);
+      }
+    } else if (item.kind === "result") {
+      div.textContent = item.text || "Game over.";
+      if (item.you != null) {
+        const scores = document.createElement("div");
+        scores.style.marginTop = "6px";
+        scores.textContent = `Your score ${item.you} · opponent ${item.them}`;
+        div.append(scores);
+      }
+    } else {
+      div.textContent = item.text || "";
+    }
+    box.append(div);
+  }
+}
+
+function waitingText(payload) {
+  const game = payload.state;
+  if (payload.waiting_for_join && payload.waiting_for_join.length) {
+    const open = payload.waiting_for_join[0];
+    return `Waiting for the ${open} player to join. Send them the link.`;
+  }
+  if (game.phase === "done") return "";
+  if (game.you_ready) {
+    return game.opponent_ready
+      ? "Resolving…"
+      : "You locked in. Waiting for the other player.";
+  }
+  if (game.opponent_ready) return "The other player has locked in. Choose your action.";
+  if (!game.your_turn) return game.prompt || "Waiting for the other player.";
+  return "";
+}
+
+function setActionButtons(game, canAct) {
+  const box = document.getElementById("move-actions");
+  const deals = document.getElementById("deals");
+  const dealWrap = document.getElementById("deal-wrap");
+  box.replaceChildren();
+  deals.replaceChildren();
+  const done = game.phase === "done";
+  const showForm = canAct && !done;
+  document.getElementById("submit").classList.toggle("hidden", !showForm);
+  document.getElementById("message").classList.toggle("hidden", !showForm);
+  document.querySelector("label[for=message]").classList.toggle("hidden", !showForm);
+  box.classList.toggle("hidden", !showForm);
+  if (!showForm) {
+    dealWrap.classList.add("hidden");
+    document.getElementById("prompt").textContent = game.prompt || "";
+    return;
+  }
+  const actions = game.phase === "negotiate"
+    ? (game.can_counter ? ["accept", "counter", "reject"] : ["accept", "reject"])
+    : (game.allow_pause ? ["first_strike", "offer_pause", "pass"] : ["first_strike", "pass"]);
+  if (!actions.includes(state.action)) {
+    state.action = actions.includes("pass") ? "pass" : actions[0];
+  }
+  for (const action of actions) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "choice";
+    btn.dataset.action = action;
+    btn.textContent = actionLabel(action);
+    if (action === state.action) btn.classList.add("selected");
+    btn.addEventListener("click", () => {
+      state.action = action;
+      selectChoice(box, "action", action);
+      dealWrap.classList.toggle("hidden", action !== "offer_pause" && action !== "counter");
+    });
+    box.append(btn);
+  }
+  const needsDeal = state.action === "offer_pause" || state.action === "counter";
+  dealWrap.classList.toggle("hidden", !needsDeal);
+  if (!state.deal && game.deal_grid.length) state.deal = game.deal_grid[0];
+  for (const deal of game.deal_grid) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "choice";
+    btn.dataset.deal = dealKey(deal);
+    btn.textContent = formatDeal(deal);
+    if (dealKey(deal) === dealKey(state.deal)) btn.classList.add("selected");
+    btn.addEventListener("click", () => {
+      state.deal = deal;
+      selectChoice(deals, "deal", dealKey(deal));
+    });
+    deals.append(btn);
+  }
+  document.getElementById("prompt").textContent = game.prompt || (
+    game.phase === "action"
+      ? "Choose first strike, offer a pause, or pass. The other player chooses at the same time."
+      : "A pause deal is on the table."
+  );
+}
+
+function enterGame(payload) {
+  state.room = payload.room;
+  state.token = payload.token;
+  state.role = payload.role;
+  rememberSeat(payload.room, payload.token, payload.role);
+  const url = shareUrl(payload.room);
+  history.replaceState(null, "", url);
+  document.getElementById("share-url").value = url;
+  setupEl.classList.add("hidden");
+  gameEl.classList.remove("hidden");
+  renderPayload(payload);
+  startPolling();
+}
+
+function renderPayload(payload) {
+  state.payload = payload;
+  const game = payload.state;
+  document.getElementById("game-title").textContent = `You are ${payload.role}`;
+  const joinNote = payload.waiting_for_join && payload.waiting_for_join.length
+    ? " · waiting for opponent"
+    : "";
+  document.getElementById("game-meta").textContent =
+    `${game.version.label} · room ${payload.room} · timestep ${game.timestep} of ${game.last_timestep}${joinNote}`;
+  renderPayoffs(game);
+  renderThread(game);
+  const waiting = waitingText(payload);
+  waitingEl.textContent = waiting;
+  waitingEl.classList.toggle("hidden", !waiting);
+  const canAct = game.your_turn;
+  setActionButtons(game, canAct);
+}
+
+function stopPolling() {
+  if (state.pollTimer) {
+    clearTimeout(state.pollTimer);
+    state.pollTimer = null;
+  }
+}
+
+function shouldPoll(payload) {
+  if (!payload) return false;
+  if (payload.state.phase === "done") return false;
+  if (payload.waiting_for_join && payload.waiting_for_join.length) return true;
+  return !payload.state.your_turn;
+}
+
+function startPolling() {
+  stopPolling();
+  if (!shouldPoll(state.payload)) return;
+  state.pollTimer = setTimeout(poll, 1500);
+}
+
+async function poll() {
+  if (!state.room || !state.token) return;
+  try {
+    const data = await api(
+      `/api/state?room=${encodeURIComponent(state.room)}&token=${encodeURIComponent(state.token)}`,
+      { timeoutMs: 90000 },
+    );
+    renderPayload(data);
+    showError(gameError, "");
+  } catch (err) {
+    showError(gameError, err.message);
+  } finally {
+    startPolling();
+  }
+}
+
+async function createRoom() {
+  showError(setupError, "");
+  const btn = document.getElementById("create");
+  btn.disabled = true;
+  try {
+    const data = await api("/api/rooms", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      timeoutMs: 90000,
+      body: JSON.stringify({ role: state.role, version: state.version }),
+    });
+    enterGame(data);
+  } catch (err) {
+    showError(setupError, err.message);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function joinRoom(room, token) {
+  showError(setupError, "");
+  const btn = document.getElementById("join");
+  btn.disabled = true;
+  try {
+    const data = await api("/api/rooms/join", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      timeoutMs: 90000,
+      body: JSON.stringify({ room, token: token || "", role: state.role }),
+    });
+    enterGame(data);
+  } catch (err) {
+    showError(setupError, err.message);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function sendMove(event) {
+  event.preventDefault();
+  const game = state.payload && state.payload.state;
+  if (!game || game.phase === "done" || !game.your_turn) return;
+  if (state.action === "first_strike" && !confirm("A first strike ends the game immediately. Continue?")) {
+    return;
+  }
+  showError(gameError, "");
+  const submit = document.getElementById("submit");
+  submit.disabled = true;
+  const payload = {
+    room: state.room,
+    token: state.token,
+    action: state.action,
+    message: document.getElementById("message").value,
+    deal: null,
+  };
+  if (state.action === "offer_pause" || state.action === "counter") {
+    const [lead, lag] = state.deal;
+    payload.deal = { lead, lag };
+  }
+  try {
+    const data = await api("/api/move", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    document.getElementById("message").value = "";
+    renderPayload(data);
+    startPolling();
+  } catch (err) {
+    showError(gameError, err.message);
+  } finally {
+    submit.disabled = false;
+  }
+}
+
+document.getElementById("roles").addEventListener("click", (event) => {
+  const btn = event.target.closest("[data-role]");
+  if (!btn) return;
+  state.role = btn.dataset.role;
+  selectChoice(document.getElementById("roles"), "role", state.role);
+});
+
+document.getElementById("create").addEventListener("click", createRoom);
+document.getElementById("join").addEventListener("click", () => {
+  const room = document.getElementById("join-code").value.trim().toUpperCase();
+  if (!room) {
+    showError(setupError, "Enter a room code.");
+    return;
+  }
+  joinRoom(room);
+});
+form.addEventListener("submit", sendMove);
+document.getElementById("again").addEventListener("click", () => {
+  stopPolling();
+  state.room = "";
+  state.token = "";
+  state.payload = null;
+  history.replaceState(null, "", window.location.pathname);
+  gameEl.classList.add("hidden");
+  setupEl.classList.remove("hidden");
+  showError(gameError, "");
+});
+document.getElementById("copy-link").addEventListener("click", async () => {
+  const value = document.getElementById("share-url").value;
+  try {
+    await navigator.clipboard.writeText(value);
+    document.getElementById("copy-link").textContent = "Copied";
+    setTimeout(() => { document.getElementById("copy-link").textContent = "Copy link"; }, 1200);
+  } catch {
+    document.getElementById("share-url").select();
+  }
+});
+
+const params = new URLSearchParams(window.location.search);
+const roomFromUrl = (params.get("room") || "").trim().toUpperCase();
+
+api("/api/setup", { timeoutMs: 90000 })
+  .then((payload) => {
+    renderSetup(payload);
+    if (!roomFromUrl) return;
+    document.getElementById("join-code").value = roomFromUrl;
+    const recalled = recalledSeat(roomFromUrl);
+    return joinRoom(roomFromUrl, recalled && recalled.token);
+  })
+  .catch((err) => showError(setupError, err.message));
+  </script>
+</body>
+</html>
