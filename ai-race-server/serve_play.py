@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import parse_qs, urlparse
 
-from game import VERSION_BY_NAME
+from game import VERSION_BY_NAME, make_custom_version, make_random_version
 from multiplayer import TwoPlayerGame, play_setup_payload
 
 ROOT = Path(__file__).resolve().parent
@@ -126,10 +126,56 @@ def role_for_token(room: dict[str, Any], token: str) -> str:
     return role
 
 
+def parse_custom_version(data: dict[str, Any]):
+    turns = int(data.get("turns") or 0)
+    if turns < 2 or turns > 15:
+        raise ValueError("Turns must be between 2 and 15.")
+    penalties = data.get("penalties")
+    if not isinstance(penalties, list) or len(penalties) != turns:
+        raise ValueError(f"Provide lead and lag second-strike penalties for each of {turns} turns.")
+    steps: list[tuple[int, int]] = []
+    for i, row in enumerate(penalties):
+        if isinstance(row, dict):
+            lead, lag = row.get("lead"), row.get("lag")
+        elif isinstance(row, (list, tuple)) and len(row) == 2:
+            lead, lag = row[0], row[1]
+        else:
+            raise ValueError(f"Turn {i} penalties must be [lead, lag].")
+        try:
+            steps.append((int(lead), int(lag)))
+        except (TypeError, ValueError) as exc:
+            raise ValueError(f"Turn {i} penalties must be integers.") from exc
+    bonus = int(data.get("first_strike_bonus", 5))
+    if bonus < 0 or bonus > 20:
+        raise ValueError("First-strike bonus must be between 0 and 20.")
+    ratio = int(data.get("concession_ratio", 5))
+    if ratio < 1 or ratio > 20:
+        raise ValueError("Concession ratio must be between 1 and 20.")
+    destruction = int(data.get("destruction_penalty", -100))
+    stayin = int(data.get("stayin_bonus", 1))
+    info = str(data.get("info") or "current")
+    if info not in {"future", "current"}:
+        raise ValueError("Knowledge must be future or current.")
+    return make_custom_version(
+        steps=steps,
+        info=info,  # type: ignore[arg-type]
+        first_strike_bonus=bonus,
+        destruction_penalty=destruction,
+        stayin_bonus=stayin,
+        concession_ratio=ratio,
+    )
+
+
 def create_room(data: dict[str, Any]) -> dict[str, Any]:
-    version = VERSION_BY_NAME.get(str(data.get("version") or ""))
-    if version is None:
-        raise ValueError("Unknown game scenario.")
+    version_name = str(data.get("version") or "")
+    if version_name == "random":
+        version = make_random_version()
+    elif version_name == "custom":
+        version = parse_custom_version(data)
+    else:
+        version = VERSION_BY_NAME.get(version_name)
+        if version is None:
+            raise ValueError("Unknown game scenario.")
     preferred = data.get("role")
     if preferred not in {"lead", "lag"}:
         preferred = "lead"

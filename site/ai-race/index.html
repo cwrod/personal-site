@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>AI-race · two players</title>
+  <title>AI Race</title>
   <style>
     :root {
       --ink: #1a1a1a;
@@ -46,6 +46,35 @@
     }
     .error { color: var(--warn); }
     .hidden { display: none !important; }
+    .server-status {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 18px;
+      padding: 10px 12px;
+      background: var(--panel);
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+    .server-status.failed { color: var(--warn); }
+    .spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid var(--line);
+      border-top-color: var(--ink);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      flex: 0 0 auto;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .setup-controls.is-blocked {
+      opacity: 0.45;
+      pointer-events: none;
+    }
     .row {
       display: flex;
       flex-wrap: wrap;
@@ -71,9 +100,12 @@
     }
     .scenarios {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+      grid-template-columns: 1fr 1fr;
       gap: 8px;
       margin: 8px 0 18px;
+    }
+    @media (max-width: 640px) {
+      .scenarios { grid-template-columns: 1fr; }
     }
     .scenario {
       text-align: left;
@@ -235,22 +267,77 @@
       padding: 8px;
       border: 1px solid #111;
     }
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      overflow: auto;
+      padding: 32px 16px;
+      z-index: 20;
+    }
+    .modal {
+      background: #fff;
+      max-width: 720px;
+      width: 100%;
+      padding: 18px 20px 20px;
+      border: 1px solid #111;
+    }
+    .modal h2 { margin-bottom: 6px; }
+    .modal .fields {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px 14px;
+      margin: 14px 0;
+    }
+    @media (max-width: 640px) {
+      .modal .fields { grid-template-columns: 1fr; }
+    }
+    .modal label {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      margin: 0 0 4px;
+    }
+    .modal input, .modal select {
+      width: 100%;
+      font: inherit;
+      font-size: 13px;
+      padding: 8px;
+      border: 1px solid #111;
+      background: #fff;
+    }
+    .penalty-table { margin: 8px 0 14px; }
+    .deal-preview {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.45;
+      margin: 0 0 14px;
+    }
   </style>
 </head>
 <body>
   <div class="page">
     <section id="setup">
-      <h1>AI-race · two players</h1>
-      <p class="lede">Same rules as the lead/lag tournament. Create a room, send the link, and both of you lock in moves at the same time. No AI.</p>
+      <h1>AI Race</h1>
+      <p class="lede">A version of the AI Race game to be played with two human players. Select a scenario, create a room, and send the link to a friend.</p>
       <details class="rules">
         <summary>How the game works</summary>
-        <p>Each timestep you may first-strike, offer a pause treaty, or pass. A first strike ends the game: the striker scores bonus plus the current second-strike penalty, and the victim scores −100. If both strike, lead goes first. A pause deal must be on the grid (0, 0) through (5, −50). The other player may accept, counter once, or reject. After a counter, only accept or reject remains. If both offer, the lead player’s deal is presented. Mutual passes move time forward. A stay-in bonus is always on: when the game ends, both players receive extra points equal to the ending timestep (0-indexed).</p>
+        <p>Each turn, the Lead and the Lag may engage in a first strike, negotiate a pause, or continue progressing. A first strike ends the game: the striker receives the first-strike bonus (+5) plus the current second-strike penalty, and the other player takes the destruction penalty (−100). If both strike, the Lead strikes first. Pause terms can be neutral or can favor one player at the expense of the other. The conceding player loses 5 points per point gained by the winning player, and a pause cannot net more than the first-strike bonus, so deals end at (0, 0) or (1, −5) through (5, −25) for the winning and conceding player. The receiving player may accept, counter once, or reject and continue to the next turn. After a counter, only accept or reject remains. If both offer, the Lead’s terms are presented. If both continue, the race moves forward. The game ends when a pause is accepted, a player strikes, or all turns finish without a strike. Both players then receive a stay-in bonus of +1 per turn, equal to the ending turn (0-indexed).</p>
       </details>
+      <div id="server-status" class="server-status" aria-live="polite">
+        <span class="spinner" aria-hidden="true"></span>
+        <span id="server-status-text">Connecting to the game server… Render sleeps when idle, so the first visit can take up to a minute.</span>
+        <button type="button" class="secondary hidden" id="retry-server">Retry</button>
+      </div>
+      <div id="setup-controls" class="setup-controls is-blocked">
       <div class="block">
         <h2>Your role</h2>
         <div class="row" id="roles">
-          <button type="button" class="choice selected" data-role="lead">Lead</button>
-          <button type="button" class="choice" data-role="lag">Lag</button>
+          <button type="button" class="choice selected" data-role="lead" disabled>Lead</button>
+          <button type="button" class="choice" data-role="lag" disabled>Lag</button>
         </div>
         <p class="hint">The person who opens your link takes the other seat.</p>
       </div>
@@ -259,17 +346,71 @@
         <div class="scenarios" id="scenarios"></div>
       </div>
       <div class="row">
-        <button type="button" class="primary" id="create">Create room</button>
+        <button type="button" class="primary" id="create" disabled>Create room</button>
       </div>
       <div class="block" style="margin-top:22px">
         <h2>Or join a room</h2>
         <div class="row">
-          <input class="join-code" id="join-code" maxlength="8" placeholder="ABCD" autocomplete="off">
-          <button type="button" class="secondary" id="join">Join</button>
+          <input class="join-code" id="join-code" maxlength="8" placeholder="ABCD" autocomplete="off" disabled>
+          <button type="button" class="secondary" id="join" disabled>Join</button>
         </div>
+      </div>
       </div>
       <p class="error hidden" id="setup-error"></p>
     </section>
+
+    <div id="custom-modal" class="modal-backdrop hidden">
+      <div class="modal" role="dialog" aria-labelledby="custom-title">
+        <h2 id="custom-title">Custom race</h2>
+        <p class="hint">Set turns, parameters, and Lead/Lag second-strike penalties for each turn. Pause deals are generated from the first-strike bonus and concession ratio.</p>
+        <div class="fields">
+          <div>
+            <label for="custom-turns">Number of turns</label>
+            <input id="custom-turns" type="number" min="2" max="15" value="10">
+          </div>
+          <div>
+            <label for="custom-preset">Fill from preset</label>
+            <select id="custom-preset">
+              <option value="">Leave as edited</option>
+              <option value="convergent">Convergent</option>
+              <option value="divergent">Divergent</option>
+              <option value="static">Static</option>
+            </select>
+          </div>
+          <div>
+            <label for="custom-bonus">First-strike bonus</label>
+            <input id="custom-bonus" type="number" min="0" max="20" value="5">
+          </div>
+          <div>
+            <label for="custom-ratio">Concession ratio</label>
+            <input id="custom-ratio" type="number" min="1" max="20" value="5">
+          </div>
+          <div>
+            <label for="custom-destruction">Destruction penalty</label>
+            <input id="custom-destruction" type="number" value="-100">
+          </div>
+          <div>
+            <label for="custom-stayin">Stay-in bonus per turn</label>
+            <input id="custom-stayin" type="number" value="1">
+          </div>
+          <div>
+            <label for="custom-info">Knowledge</label>
+            <select id="custom-info">
+              <option value="current">Current knowledge</option>
+              <option value="future">Future knowledge</option>
+            </select>
+          </div>
+        </div>
+        <h2>Second-strike penalties</h2>
+        <div class="penalty-table" id="custom-penalties"></div>
+        <p class="deal-preview" id="custom-deals"></p>
+        <p class="error hidden" id="custom-error"></p>
+        <div class="row">
+          <button type="button" class="primary" id="custom-create">Create room</button>
+          <button type="button" class="secondary" id="custom-cancel">Cancel</button>
+        </div>
+      </div>
+    </div>
 
     <section id="game" class="hidden">
       <h1 id="game-title">Game</h1>
@@ -334,6 +475,8 @@ const state = {
   action: "pass",
   deal: null,
   pollTimer: null,
+  custom: null,
+  penalties: [],
 };
 
 function showError(el, text) {
@@ -392,6 +535,33 @@ function recalledSeat(room) {
   }
 }
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function setSetupEnabled(enabled) {
+  const box = document.getElementById("setup-controls");
+  box.classList.toggle("is-blocked", !enabled);
+  for (const el of box.querySelectorAll("button, input, select, textarea")) {
+    el.disabled = !enabled;
+  }
+}
+
+function setServerStatus(text, { spinning = true, failed = false } = {}) {
+  const bar = document.getElementById("server-status");
+  const retry = document.getElementById("retry-server");
+  if (!text) {
+    bar.classList.add("hidden");
+    retry.classList.add("hidden");
+    return;
+  }
+  bar.classList.remove("hidden");
+  bar.classList.toggle("failed", failed);
+  bar.querySelector(".spinner").classList.toggle("hidden", !spinning);
+  document.getElementById("server-status-text").textContent = text;
+  retry.classList.toggle("hidden", !failed);
+}
+
 async function api(path, options = {}) {
   const timeoutMs = options.timeoutMs || 20000;
   const headers = { ...(options.headers || {}) };
@@ -412,6 +582,37 @@ async function api(path, options = {}) {
   }
 }
 
+async function waitForSetup() {
+  setSetupEnabled(false);
+  setServerStatus("Connecting to the game server… Render sleeps when idle, so the first visit can take up to a minute.");
+  showError(setupError, "");
+  const started = Date.now();
+  const deadline = started + 120000;
+  let lastError = null;
+  while (Date.now() < deadline) {
+    try {
+      const payload = await api("/api/setup", {
+        timeoutMs: Math.max(5000, Math.min(90000, deadline - Date.now())),
+      });
+      renderSetup(payload);
+      setServerStatus("");
+      setSetupEnabled(true);
+      return payload;
+    } catch (err) {
+      lastError = err;
+      const secs = Math.max(1, Math.round((Date.now() - started) / 1000));
+      setServerStatus(
+        `Waking the game server… ${secs}s. Render sleeps when idle; the first visit can take up to a minute.`,
+      );
+      await sleep(2000);
+    }
+  }
+  const message = (lastError && lastError.message) || "Could not reach the game server.";
+  setServerStatus(message, { spinning: false, failed: true });
+  showError(setupError, message);
+  throw lastError || new Error(message);
+}
+
 function renderSetup(payload) {
   state.setup = payload;
   scenariosEl.replaceChildren();
@@ -423,10 +624,15 @@ function renderSetup(payload) {
     const title = document.createElement("strong");
     title.textContent = version.label;
     const blurb = document.createElement("span");
-    blurb.textContent = `${version.blurb} ${version.notes.join(" ")}`;
+    blurb.textContent = `${version.blurb} ${(version.notes || []).join(" ")}`;
     btn.append(title, blurb);
     btn.addEventListener("click", () => {
+      if (version.name === "custom") {
+        openCustomModal();
+        return;
+      }
       state.version = version.name;
+      state.custom = null;
       selectChoice(scenariosEl, "version", version.name);
     });
     scenariosEl.append(btn);
@@ -444,7 +650,7 @@ function renderPayoffs(game) {
   payoffs.replaceChildren();
   const lines = [
     `Timestep ${vis.timestep} of ${vis.n_timesteps - 1}.`,
-    `First-strike bonuses: lead +${vis.lead_bonus}, lag +${vis.lag_bonus}.`,
+    `First-strike bonus: +${vis.first_strike_bonus} for both players.`,
     `Second-strike penalties: lead ${vis.lead_penalty}, lag ${vis.lag_penalty}.`,
     `If lead strikes now: lead ${vis.if_lead_strikes.lead}, lag ${vis.if_lead_strikes.lag}.`,
     `If lag strikes now: lead ${vis.if_lag_strikes.lead}, lag ${vis.if_lag_strikes.lag}.`,
@@ -478,7 +684,7 @@ function renderPayoffs(game) {
   }
   const hint = document.createElement("p");
   hint.className = "hint";
-  hint.textContent = game.version.info === "complete"
+  hint.textContent = game.version.info === "future"
     ? "Full payoff path, including future timesteps."
     : "Payoffs from the start through this timestep. Future timesteps are hidden.";
   box.append(hint);
@@ -578,7 +784,7 @@ function setActionButtons(game, canAct) {
   }
   const actions = game.phase === "negotiate"
     ? (game.can_counter ? ["accept", "counter", "reject"] : ["accept", "reject"])
-    : (game.allow_pause ? ["first_strike", "offer_pause", "pass"] : ["first_strike", "pass"]);
+    : ["first_strike", "offer_pause", "pass"];
   if (!actions.includes(state.action)) {
     state.action = actions.includes("pass") ? "pass" : actions[0];
   }
@@ -687,22 +893,34 @@ async function poll() {
   }
 }
 
-async function createRoom() {
+async function createRoom(fromCustom) {
   showError(setupError, "");
+  if (state.version === "custom" && !fromCustom && !state.custom) {
+    openCustomModal();
+    return;
+  }
   const btn = document.getElementById("create");
+  const customBtn = document.getElementById("custom-create");
   btn.disabled = true;
+  customBtn.disabled = true;
+  const body = { role: state.role, version: state.version };
+  if (state.version === "custom" && state.custom) {
+    Object.assign(body, state.custom);
+  }
   try {
     const data = await api("/api/rooms", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       timeoutMs: 90000,
-      body: JSON.stringify({ role: state.role, version: state.version }),
+      body: JSON.stringify(body),
     });
+    closeCustomModal();
     enterGame(data);
   } catch (err) {
-    showError(setupError, err.message);
+    showError(fromCustom ? document.getElementById("custom-error") : setupError, err.message);
   } finally {
     btn.disabled = false;
+    customBtn.disabled = false;
   }
 }
 
@@ -762,6 +980,120 @@ async function sendMove(event) {
   }
 }
 
+function dealGridFromParams(bonus, ratio) {
+  const deals = [[0, 0]];
+  for (let k = 1; k <= bonus; k++) {
+    deals.push([k, -k * ratio]);
+    deals.push([-k * ratio, k]);
+  }
+  return deals;
+}
+
+function defaultPenalties(turns) {
+  const preset = (state.setup && state.setup.presets && state.setup.presets.static) || [];
+  const rows = [];
+  for (let i = 0; i < turns; i++) {
+    const src = state.penalties[i] || preset[i] || [-30, -30];
+    rows.push([Number(src[0]), Number(src[1])]);
+  }
+  return rows;
+}
+
+function readPenaltyInputs() {
+  const rows = [];
+  const table = document.getElementById("custom-penalties");
+  const turnRows = table.querySelectorAll("tbody tr");
+  for (const tr of turnRows) {
+    const inputs = tr.querySelectorAll("input");
+    rows.push([Number(inputs[0].value), Number(inputs[1].value)]);
+  }
+  return rows;
+}
+
+function renderPenaltyTable(rows) {
+  const box = document.getElementById("custom-penalties");
+  const table = document.createElement("table");
+  table.innerHTML = "<thead><tr><th>t</th><th>Lead penalty</th><th>Lag penalty</th></tr></thead>";
+  const body = document.createElement("tbody");
+  rows.forEach((row, i) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${i}</td>
+      <td><input type="number" value="${row[0]}"></td>
+      <td><input type="number" value="${row[1]}"></td>`;
+    body.append(tr);
+  });
+  table.append(body);
+  box.replaceChildren(table);
+}
+
+function renderDealPreview() {
+  const bonus = Number(document.getElementById("custom-bonus").value);
+  const ratio = Number(document.getElementById("custom-ratio").value);
+  const deals = dealGridFromParams(bonus, ratio);
+  document.getElementById("custom-deals").textContent =
+    `Pause deals (lead, lag): ${deals.map(([a, b]) => `(${a}, ${b})`).join(", ")}`;
+}
+
+function openCustomModal() {
+  state.version = "custom";
+  selectChoice(scenariosEl, "version", "custom");
+  const defaults = (state.setup && state.setup.defaults) || {};
+  document.getElementById("custom-turns").value = String(defaults.turns || 10);
+  document.getElementById("custom-bonus").value = String(defaults.first_strike_bonus ?? 5);
+  document.getElementById("custom-ratio").value = String(defaults.concession_ratio ?? 5);
+  document.getElementById("custom-destruction").value = String(defaults.destruction_penalty ?? -100);
+  document.getElementById("custom-stayin").value = String(defaults.stayin_bonus ?? 1);
+  document.getElementById("custom-info").value = defaults.info || "current";
+  document.getElementById("custom-preset").value = "";
+  state.penalties = defaultPenalties(Number(document.getElementById("custom-turns").value));
+  renderPenaltyTable(state.penalties);
+  renderDealPreview();
+  showError(document.getElementById("custom-error"), "");
+  document.getElementById("custom-modal").classList.remove("hidden");
+}
+
+function closeCustomModal() {
+  document.getElementById("custom-modal").classList.add("hidden");
+}
+
+function applyPreset() {
+  const name = document.getElementById("custom-preset").value;
+  const preset = state.setup && state.setup.presets && state.setup.presets[name];
+  if (!preset) return;
+  document.getElementById("custom-turns").value = String(preset.length);
+  state.penalties = preset.map((row) => [row[0], row[1]]);
+  renderPenaltyTable(state.penalties);
+}
+
+function syncTurns() {
+  const turns = Number(document.getElementById("custom-turns").value);
+  if (!Number.isInteger(turns) || turns < 2 || turns > 15) return;
+  state.penalties = readPenaltyInputs();
+  state.penalties = defaultPenalties(turns);
+  renderPenaltyTable(state.penalties);
+}
+
+function customPayload() {
+  const turns = Number(document.getElementById("custom-turns").value);
+  if (!Number.isInteger(turns) || turns < 2 || turns > 15) {
+    throw new Error("Turns must be between 2 and 15.");
+  }
+  const penalties = readPenaltyInputs();
+  if (penalties.length !== turns || penalties.some((row) => row.some((n) => !Number.isFinite(n)))) {
+    throw new Error("Enter integer lead and lag penalties for each turn.");
+  }
+  return {
+    version: "custom",
+    turns,
+    penalties,
+    first_strike_bonus: Number(document.getElementById("custom-bonus").value),
+    concession_ratio: Number(document.getElementById("custom-ratio").value),
+    destruction_penalty: Number(document.getElementById("custom-destruction").value),
+    stayin_bonus: Number(document.getElementById("custom-stayin").value),
+    info: document.getElementById("custom-info").value,
+  };
+}
+
 document.getElementById("roles").addEventListener("click", (event) => {
   const btn = event.target.closest("[data-role]");
   if (!btn) return;
@@ -769,7 +1101,25 @@ document.getElementById("roles").addEventListener("click", (event) => {
   selectChoice(document.getElementById("roles"), "role", state.role);
 });
 
-document.getElementById("create").addEventListener("click", createRoom);
+document.getElementById("create").addEventListener("click", () => createRoom(false));
+document.getElementById("custom-cancel").addEventListener("click", closeCustomModal);
+document.getElementById("custom-create").addEventListener("click", () => {
+  try {
+    showError(document.getElementById("custom-error"), "");
+    state.custom = customPayload();
+    state.version = "custom";
+    createRoom(true);
+  } catch (err) {
+    showError(document.getElementById("custom-error"), err.message);
+  }
+});
+document.getElementById("custom-turns").addEventListener("change", syncTurns);
+document.getElementById("custom-preset").addEventListener("change", applyPreset);
+document.getElementById("custom-bonus").addEventListener("input", renderDealPreview);
+document.getElementById("custom-ratio").addEventListener("input", renderDealPreview);
+document.getElementById("custom-modal").addEventListener("click", (event) => {
+  if (event.target.id === "custom-modal") closeCustomModal();
+});
 document.getElementById("join").addEventListener("click", () => {
   const room = document.getElementById("join-code").value.trim().toUpperCase();
   if (!room) {
@@ -788,6 +1138,8 @@ document.getElementById("again").addEventListener("click", () => {
   gameEl.classList.add("hidden");
   setupEl.classList.remove("hidden");
   showError(gameError, "");
+  setServerStatus("");
+  setSetupEnabled(Boolean(state.setup));
 });
 document.getElementById("copy-link").addEventListener("click", async () => {
   const value = document.getElementById("share-url").value;
@@ -803,15 +1155,24 @@ document.getElementById("copy-link").addEventListener("click", async () => {
 const params = new URLSearchParams(window.location.search);
 const roomFromUrl = (params.get("room") || "").trim().toUpperCase();
 
-api("/api/setup", { timeoutMs: 90000 })
-  .then((payload) => {
-    renderSetup(payload);
+async function boot() {
+  try {
+    await waitForSetup();
     if (!roomFromUrl) return;
     document.getElementById("join-code").value = roomFromUrl;
     const recalled = recalledSeat(roomFromUrl);
-    return joinRoom(roomFromUrl, recalled && recalled.token);
-  })
-  .catch((err) => showError(setupError, err.message));
+    setServerStatus("Joining room…");
+    setSetupEnabled(false);
+    await joinRoom(roomFromUrl, recalled && recalled.token);
+    setServerStatus("");
+  } catch (err) {
+    showError(setupError, err.message);
+    if (!state.room) setSetupEnabled(Boolean(state.setup));
+  }
+}
+
+document.getElementById("retry-server").addEventListener("click", boot);
+boot();
   </script>
 </body>
 </html>

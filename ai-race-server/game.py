@@ -5,16 +5,17 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Callable, Literal
 
-LEAD_BONUS = 5
-VICTIM_SCORE = -100
+FIRST_STRIKE_BONUS = 5
+DESTRUCTION_PENALTY = -100
+CONCESSION_RATIO = 5
 MAX_NEGOTIATION_ROUNDS = 2
 
-InfoMode = Literal["complete", "current"]
+InfoMode = Literal["future", "current"]
 Role = Literal["lead", "lag"]
 Outcome = Literal["first_strike_lead", "first_strike_lag", "deal", "status_quo"]
 
 TRAJECTORIES: dict[str, list[tuple[int, int]]] = {
-    "catchup": [
+    "convergent": [
         (-30, -30),
         (-25, -29),
         (-20, -25),
@@ -26,19 +27,7 @@ TRAJECTORIES: dict[str, list[tuple[int, int]]] = {
         (0, -3),
         (0, 0),
     ],
-    "pace": [
-        (-30, -30),
-        (-25, -30),
-        (-20, -30),
-        (-15, -30),
-        (-10, -30),
-        (-8, -30),
-        (-5, -30),
-        (-3, -30),
-        (0, -30),
-        (0, -30),
-    ],
-    "falling_behind": [
+    "divergent": [
         (-30, -30),
         (-25, -35),
         (-20, -40),
@@ -50,21 +39,23 @@ TRAJECTORIES: dict[str, list[tuple[int, int]]] = {
         (0, -70),
         (0, -75),
     ],
+    "static": [(-30, -30)] * 10,
 }
 
-DEAL_GRID: list[tuple[int, int]] = [
-    (0, 0),
-    (1, -10),
-    (2, -20),
-    (3, -30),
-    (4, -40),
-    (5, -50),
-]
+RACE_NAMES = ("convergent", "divergent", "static")
 
-DEAL_SET = set(DEAL_GRID)
+
+def make_deal_grid(bonus: int = FIRST_STRIKE_BONUS, ratio: int = CONCESSION_RATIO) -> list[tuple[int, int]]:
+    deals = [(0, 0)]
+    for k in range(1, bonus + 1):
+        deals.append((k, -k * ratio))
+        deals.append((-k * ratio, k))
+    return deals
+
+
+DEAL_GRID: list[tuple[int, int]] = make_deal_grid()
 
 ACTION_CHOICES = frozenset({"first_strike", "offer_pause", "pass"})
-NO_PAUSE_ACTIONS = frozenset({"first_strike", "pass"})
 NEGOTIATE_CHOICES = frozenset({"accept", "counter", "reject"})
 
 
@@ -73,62 +64,38 @@ class Version:
     name: str
     trajectory: str
     info: InfoMode
-    lag_bonus: int
-    start_timestep: int = 0
-    allow_pause: bool = True
-    high_risk_roles: frozenset[str] = frozenset()
+    first_strike_bonus: int = FIRST_STRIKE_BONUS
+    destruction_penalty: int = DESTRUCTION_PENALTY
     stayin_bonus: int = 1
+    concession_ratio: int = CONCESSION_RATIO
+    custom_steps: tuple[tuple[int, int], ...] | None = None
+    hidden: bool = False
+
+    @property
+    def steps(self) -> list[tuple[int, int]]:
+        if self.custom_steps is not None:
+            return list(self.custom_steps)
+        return list(TRAJECTORIES[self.trajectory])
+
+    @property
+    def deal_grid(self) -> list[tuple[int, int]]:
+        return make_deal_grid(self.first_strike_bonus, self.concession_ratio)
+
+    @property
+    def deal_set(self) -> set[tuple[int, int]]:
+        return set(self.deal_grid)
 
 
 VERSIONS: list[Version] = [
-    Version("catchup_complete", "catchup", "complete", 5),
-    Version("catchup_current", "catchup", "current", 5),
-    Version("pace_complete", "pace", "complete", 5),
-    Version("pace_current", "pace", "current", 5),
-    Version("falling_behind_complete", "falling_behind", "complete", 5),
-    Version("falling_behind_current", "falling_behind", "current", 5),
-    Version("catchup_high_pain_complete", "catchup", "complete", 15),
-    Version("catchup_high_pain_current", "catchup", "current", 15),
-    Version("catchup_complete_pass3", "catchup", "complete", 5, start_timestep=3),
-    Version("catchup_current_pass3", "catchup", "current", 5, start_timestep=3),
-    Version("catchup_nopause_complete", "catchup", "complete", 5, allow_pause=False),
-    Version("catchup_nopause_current", "catchup", "current", 5, allow_pause=False),
-    Version("catchup_nopause_pass3_complete", "catchup", "complete", 5, start_timestep=3, allow_pause=False),
-    Version("catchup_nopause_pass3_current", "catchup", "current", 5, start_timestep=3, allow_pause=False),
-    Version(
-        "catchup_current_high_risk_lead",
-        "catchup",
-        "current",
-        5,
-        high_risk_roles=frozenset({"lead"}),
-    ),
-    Version(
-        "catchup_current_high_risk_lag",
-        "catchup",
-        "current",
-        5,
-        high_risk_roles=frozenset({"lag"}),
-    ),
-    Version(
-        "catchup_current_high_risk_both",
-        "catchup",
-        "current",
-        5,
-        high_risk_roles=frozenset({"lead", "lag"}),
-    ),
+    Version("convergent_future", "convergent", "future"),
+    Version("convergent_current", "convergent", "current"),
+    Version("divergent_future", "divergent", "future"),
+    Version("divergent_current", "divergent", "current"),
+    Version("static_future", "static", "future"),
+    Version("static_current", "static", "current"),
 ]
 
-CLASSIC_VERSION_NAMES = [
-    "catchup_complete",
-    "catchup_current",
-    "pace_complete",
-    "pace_current",
-    "falling_behind_complete",
-    "falling_behind_current",
-    "catchup_high_pain_complete",
-    "catchup_high_pain_current",
-]
-
+CLASSIC_VERSION_NAMES = [v.name for v in VERSIONS]
 VERSION_BY_NAME = {v.name: v for v in VERSIONS}
 
 Actor = Callable[[str, dict[str, Any]], dict[str, Any]]
@@ -159,26 +126,30 @@ def apply_stayin(
 
 
 def visible_payoffs(version: Version, timestep: int) -> dict[str, Any]:
-    steps = TRAJECTORIES[version.trajectory]
+    steps = version.steps
     lead_pen, lag_pen = steps[timestep]
+    bonus = version.first_strike_bonus
+    destruction = version.destruction_penalty
     current = {
         "timestep": timestep,
         "n_timesteps": len(steps),
-        "lead_bonus": LEAD_BONUS,
-        "lag_bonus": version.lag_bonus,
+        "first_strike_bonus": bonus,
+        "destruction_penalty": destruction,
+        "concession_ratio": version.concession_ratio,
         "stayin_bonus": version.stayin_bonus,
         "stayin_if_end": stayin_award(version, timestep),
         "lead_penalty": lead_pen,
         "lag_penalty": lag_pen,
         "if_lead_strikes": {
-            "lead": first_strike_payoff(LEAD_BONUS, lead_pen),
-            "lag": VICTIM_SCORE,
+            "lead": first_strike_payoff(bonus, lead_pen),
+            "lag": destruction,
         },
         "if_lag_strikes": {
-            "lead": VICTIM_SCORE,
-            "lag": first_strike_payoff(version.lag_bonus, lag_pen),
+            "lead": destruction,
+            "lag": first_strike_payoff(bonus, lag_pen),
         },
     }
+
     def row(i: int, p: tuple[int, int]) -> dict[str, Any]:
         return {
             "timestep": i,
@@ -186,23 +157,26 @@ def visible_payoffs(version: Version, timestep: int) -> dict[str, Any]:
             "lag_penalty": p[1],
             "stayin_if_end": stayin_award(version, i),
             "if_lead_strikes": {
-                "lead": first_strike_payoff(LEAD_BONUS, p[0]),
-                "lag": VICTIM_SCORE,
+                "lead": first_strike_payoff(bonus, p[0]),
+                "lag": destruction,
             },
             "if_lag_strikes": {
-                "lead": VICTIM_SCORE,
-                "lag": first_strike_payoff(version.lag_bonus, p[1]),
+                "lead": destruction,
+                "lag": first_strike_payoff(bonus, p[1]),
             },
         }
 
-    if version.info == "complete":
+    if version.info == "future":
         current["trajectory"] = [row(i, p) for i, p in enumerate(steps)]
     else:
         current["trajectory"] = [row(i, p) for i, p in enumerate(steps[: timestep + 1])]
     return current
 
 
-def normalize_deal(raw: Any) -> tuple[int, int] | None:
+def normalize_deal(
+    raw: Any, deal_set: set[tuple[int, int]] | None = None
+) -> tuple[int, int] | None:
+    allowed = deal_set if deal_set is not None else set(DEAL_GRID)
     if raw is None:
         return None
     if isinstance(raw, (list, tuple)) and len(raw) == 2:
@@ -213,7 +187,7 @@ def normalize_deal(raw: Any) -> tuple[int, int] | None:
         deal = (int(raw["lead"]), int(raw["lag"]))
     else:
         return None
-    return deal if deal in DEAL_SET else None
+    return deal if deal in allowed else None
 
 
 def _public_action(move: dict[str, Any]) -> dict[str, Any]:
@@ -227,28 +201,27 @@ def _public_action(move: dict[str, Any]) -> dict[str, Any]:
 def validate_move(
     phase: str,
     parsed: dict[str, Any] | None,
-    allow_pause: bool = True,
     can_counter: bool = True,
+    deal_set: set[tuple[int, int]] | None = None,
 ) -> dict[str, Any] | None:
     if not parsed:
         return None
     action = parsed.get("action")
     if phase == "negotiate":
         allowed = NEGOTIATE_CHOICES if can_counter else frozenset({"accept", "reject"})
-    elif allow_pause:
-        allowed = ACTION_CHOICES
     else:
-        allowed = NO_PAUSE_ACTIONS
+        allowed = ACTION_CHOICES
     if action not in allowed:
         return None
+    allowed_deals = deal_set if deal_set is not None else set(DEAL_GRID)
     deal = None
     if action in {"offer_pause", "counter"}:
-        deal = normalize_deal(parsed.get("deal"))
+        deal = normalize_deal(parsed.get("deal"), allowed_deals)
         if deal is None:
             return None
     elif parsed.get("deal") is not None:
-        maybe = normalize_deal(parsed.get("deal"))
-        if maybe is not None and maybe not in DEAL_SET:
+        maybe = normalize_deal(parsed.get("deal"), allowed_deals)
+        if maybe is not None and maybe not in allowed_deals:
             return None
         deal = maybe
     return {
@@ -258,22 +231,46 @@ def validate_move(
     }
 
 
+def make_custom_version(
+    *,
+    steps: list[tuple[int, int]],
+    info: InfoMode = "current",
+    first_strike_bonus: int = FIRST_STRIKE_BONUS,
+    destruction_penalty: int = DESTRUCTION_PENALTY,
+    stayin_bonus: int = 1,
+    concession_ratio: int = CONCESSION_RATIO,
+    name: str = "custom",
+    trajectory: str = "custom",
+    hidden: bool = False,
+) -> Version:
+    return Version(
+        name=name,
+        trajectory=trajectory,
+        info=info,
+        first_strike_bonus=first_strike_bonus,
+        destruction_penalty=destruction_penalty,
+        stayin_bonus=stayin_bonus,
+        concession_ratio=concession_ratio,
+        custom_steps=tuple((int(a), int(b)) for a, b in steps),
+        hidden=hidden,
+    )
+
+
+def make_random_version() -> Version:
+    import random
+
+    race = random.choice(RACE_NAMES)
+    return Version(name="random", trajectory=race, info="current", hidden=True)
+
+
 def play_game(version: Version, lead_act: Actor, lag_act: Actor) -> GameResult:
-    steps = TRAJECTORIES[version.trajectory]
+    steps = version.steps
     n = len(steps)
-    start = version.start_timestep
+    deals = version.deal_set
+    bonus = version.first_strike_bonus
+    destruction = version.destruction_penalty
     passed = {"action": "pass", "deal": None, "message": ""}
-    public_history: list[dict[str, Any]] = [
-        {
-            "timestep": t,
-            "lead": passed,
-            "lag": passed,
-            "negotiation": [],
-            "resolution": "pass",
-            "preloaded": True,
-        }
-        for t in range(start)
-    ]
+    public_history: list[dict[str, Any]] = []
     events: list[dict[str, Any]] = []
 
     def context(role: Role, timestep: int, **extra: Any) -> dict[str, Any]:
@@ -281,16 +278,13 @@ def play_game(version: Version, lead_act: Actor, lag_act: Actor) -> GameResult:
             "role": role,
             "version": version.name,
             "info": version.info,
-            "high_pain_tolerance": version.lag_bonus > LEAD_BONUS,
-            "high_risk": role in version.high_risk_roles,
             "stayin_bonus": version.stayin_bonus,
             "timestep": timestep,
             "n_timesteps": n,
             "is_last_timestep": timestep == n - 1,
             "visible": visible_payoffs(version, timestep),
             "public_history": list(public_history),
-            "deal_grid": [list(d) for d in DEAL_GRID],
-            "allow_pause": version.allow_pause,
+            "deal_grid": [list(d) for d in version.deal_grid],
             **extra,
         }
 
@@ -309,9 +303,9 @@ def play_game(version: Version, lead_act: Actor, lag_act: Actor) -> GameResult:
             "version": version.name,
             "trajectory_name": version.trajectory,
             "information": version.info,
-            "lag_bonus": version.lag_bonus,
-            "lead_bonus": LEAD_BONUS,
-            "high_risk_roles": sorted(version.high_risk_roles),
+            "first_strike_bonus": bonus,
+            "destruction_penalty": destruction,
+            "concession_ratio": version.concession_ratio,
             "stayin_bonus": version.stayin_bonus,
             "trajectory": [
                 {"timestep": i, "lead_penalty": p[0], "lag_penalty": p[1]}
@@ -328,7 +322,7 @@ def play_game(version: Version, lead_act: Actor, lag_act: Actor) -> GameResult:
         }
         return GameResult(lead_score, lag_score, outcome, timestep, log)
 
-    for t in range(start, n):
+    for t in range(n):
         visible = visible_payoffs(version, t)
         lead_move = lead_act("action", context("lead", t, phase="action"))
         lag_move = lag_act("action", context("lag", t, phase="action"))
@@ -348,33 +342,45 @@ def play_game(version: Version, lead_act: Actor, lag_act: Actor) -> GameResult:
             if lead_action == "first_strike":
                 event["resolution"] = "first_strike_lead"
                 events.append(event)
-                public_history.append({"timestep": t, "lead": _public_action(lead_move), "lag": _public_action(lag_move), "resolution": "first_strike_lead"})
+                public_history.append(
+                    {
+                        "timestep": t,
+                        "lead": _public_action(lead_move),
+                        "lag": _public_action(lag_move),
+                        "resolution": "first_strike_lead",
+                    }
+                )
                 return end(
-                    first_strike_payoff(LEAD_BONUS, lead_pen),
-                    VICTIM_SCORE,
+                    first_strike_payoff(bonus, lead_pen),
+                    destruction,
                     "first_strike_lead",
                     t,
                     extra={"striker": "lead"},
                 )
             event["resolution"] = "first_strike_lag"
             events.append(event)
-            public_history.append({"timestep": t, "lead": _public_action(lead_move), "lag": _public_action(lag_move), "resolution": "first_strike_lag"})
+            public_history.append(
+                {
+                    "timestep": t,
+                    "lead": _public_action(lead_move),
+                    "lag": _public_action(lag_move),
+                    "resolution": "first_strike_lag",
+                }
+            )
             return end(
-                VICTIM_SCORE,
-                first_strike_payoff(version.lag_bonus, lag_pen),
+                destruction,
+                first_strike_payoff(bonus, lag_pen),
                 "first_strike_lag",
                 t,
                 extra={"striker": "lag"},
             )
 
-        if not version.allow_pause:
-            if lead_action == "offer_pause":
-                lead_action = "pass"
-            if lag_action == "offer_pause":
-                lag_action = "pass"
-
-        lead_deal = normalize_deal(lead_move.get("deal")) if lead_action == "offer_pause" else None
-        lag_deal = normalize_deal(lag_move.get("deal")) if lag_action == "offer_pause" else None
+        lead_deal = (
+            normalize_deal(lead_move.get("deal"), deals) if lead_action == "offer_pause" else None
+        )
+        lag_deal = (
+            normalize_deal(lag_move.get("deal"), deals) if lag_action == "offer_pause" else None
+        )
         if lead_action == "offer_pause" and lead_deal is None:
             lead_action = "pass"
         if lag_action == "offer_pause" and lag_deal is None:
@@ -438,7 +444,7 @@ def play_game(version: Version, lead_act: Actor, lag_act: Actor) -> GameResult:
                         extra={"deal": {"lead": current_deal[0], "lag": current_deal[1]}},
                     )
                 if reply_action == "counter" and can_counter:
-                    new_deal = normalize_deal(reply.get("deal"))
+                    new_deal = normalize_deal(reply.get("deal"), deals)
                     if new_deal is None:
                         event["resolution"] = "negotiation_invalid_counter"
                         break

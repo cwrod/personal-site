@@ -6,11 +6,7 @@ from typing import Any
 
 from game import (
     DEAL_GRID,
-    LEAD_BONUS,
-    MAX_NEGOTIATION_ROUNDS,
-    TRAJECTORIES,
     VERSIONS,
-    VICTIM_SCORE,
     Version,
     _public_action,
     apply_stayin,
@@ -34,61 +30,52 @@ MODELS: dict[str, dict[str, str]] = {
 }
 
 VERSION_LABELS = {
-    "catchup_complete": "Catch-up · complete",
-    "catchup_current": "Catch-up · current",
-    "pace_complete": "Pace · complete",
-    "pace_current": "Pace · current",
-    "falling_behind_complete": "Falling behind · complete",
-    "falling_behind_current": "Falling behind · current",
-    "catchup_high_pain_complete": "Catch-up high pain · complete",
-    "catchup_high_pain_current": "Catch-up high pain · current",
-    "catchup_complete_pass3": "Catch-up · complete · 3 passes",
-    "catchup_current_pass3": "Catch-up · current · 3 passes",
-    "catchup_nopause_complete": "Catch-up · no pause · complete",
-    "catchup_nopause_current": "Catch-up · no pause · current",
-    "catchup_nopause_pass3_complete": "Catch-up · no pause · complete · 3 passes",
-    "catchup_nopause_pass3_current": "Catch-up · no pause · current · 3 passes",
-    "catchup_current_high_risk_lead": "Catch-up · current · high risk lead",
-    "catchup_current_high_risk_lag": "Catch-up · current · high risk lag",
-    "catchup_current_high_risk_both": "Catch-up · current · high risk both",
+    "convergent_future": "Convergent · future knowledge",
+    "convergent_current": "Convergent · current knowledge",
+    "divergent_future": "Divergent · future knowledge",
+    "divergent_current": "Divergent · current knowledge",
+    "static_future": "Static · future knowledge",
+    "static_current": "Static · current knowledge",
+    "random": "Random",
+    "custom": "Custom",
 }
 
 TRAJECTORY_BLURBS = {
-    "catchup": "The lag player's second-strike penalty improves toward the lead's.",
-    "pace": "The lead player's second-strike penalty improves; the lag player's stays at −30.",
-    "falling_behind": "The lag player's second-strike penalty worsens each timestep.",
+    "convergent": "Both players' second-strike penalties shrink toward zero. Lead reaches a positive first strike first.",
+    "divergent": "Lead's second-strike penalty improves to zero; Lag's penalty worsens each timestep.",
+    "static": "Second-strike penalties stay at −30 for both players.",
 }
 
 
 def version_meta(version: Version) -> dict[str, Any]:
     notes: list[str] = []
-    if version.info == "complete":
-        notes.append("Full payoff path is visible.")
+    if version.hidden:
+        notes.append("Race type is hidden. Only payoffs from the start through the current timestep are visible.")
+        blurb = "One of Convergent, Divergent, or Static, chosen at random."
+        label = "Random"
+        trajectory = "random"
     else:
-        notes.append("Payoffs from the start through the current timestep are visible.")
-    if version.lag_bonus > LEAD_BONUS:
-        notes.append(f"Lag first-strike bonus is +{version.lag_bonus}.")
-    if version.start_timestep:
-        notes.append(f"Starts at timestep {version.start_timestep} after mutual passes.")
-    if not version.allow_pause:
-        notes.append("Pause treaties are off.")
-    if version.high_risk_roles:
-        who = " and ".join(role for role in ("lead", "lag") if role in version.high_risk_roles)
-        notes.append(f"High-risk max-score preamble for {who}.")
-    if version.stayin_bonus:
-        notes.append(
-            f"Stay-in bonus: +{version.stayin_bonus} per ending timestep to both players."
-        )
+        if version.info == "future":
+            notes.append("Full payoff path is visible.")
+        else:
+            notes.append("Payoffs from the start through the current timestep are visible.")
+        blurb = TRAJECTORY_BLURBS.get(version.trajectory, "Custom second-strike path.")
+        label = VERSION_LABELS.get(version.name, version.name)
+        trajectory = version.trajectory
+    notes.append(
+        f"Stay-in bonus: +{version.stayin_bonus} per ending timestep to both players."
+    )
     return {
         "name": version.name,
-        "label": VERSION_LABELS.get(version.name, version.name),
-        "trajectory": version.trajectory,
+        "label": label,
+        "trajectory": trajectory,
         "info": version.info,
-        "lag_bonus": version.lag_bonus,
-        "start_timestep": version.start_timestep,
-        "allow_pause": version.allow_pause,
+        "first_strike_bonus": version.first_strike_bonus,
+        "destruction_penalty": version.destruction_penalty,
+        "concession_ratio": version.concession_ratio,
         "stayin_bonus": version.stayin_bonus,
-        "blurb": TRAJECTORY_BLURBS[version.trajectory],
+        "hidden": version.hidden,
+        "blurb": blurb,
         "notes": notes,
     }
 
@@ -124,21 +111,10 @@ class InteractiveGame:
         self.model_key = model_key
         self.model_label = MODELS[model_key]["label"]
         self.ai_act = ai_act
-        self.steps = TRAJECTORIES[version.trajectory]
+        self.steps = version.steps
         self.n = len(self.steps)
-        self.timestep = version.start_timestep
-        passed = {"action": "pass", "deal": None, "message": ""}
-        self.public_history: list[dict[str, Any]] = [
-            {
-                "timestep": t,
-                "lead": passed,
-                "lag": passed,
-                "negotiation": [],
-                "resolution": "pass",
-                "preloaded": True,
-            }
-            for t in range(version.start_timestep)
-        ]
+        self.timestep = 0
+        self.public_history: list[dict[str, Any]] = []
         self.events: list[dict[str, Any]] = []
         self.phase = "action"
         self.can_counter = True
@@ -153,32 +129,22 @@ class InteractiveGame:
         self.thread: list[dict[str, Any]] = []
         self.result: dict[str, Any] | None = None
         self.prompt = ""
-        if version.start_timestep:
-            self.thread.append(
-                {
-                    "kind": "note",
-                    "text": (
-                        f"The first {version.start_timestep} timestep(s) already elapsed. "
-                        "Both players passed on those turns."
-                    ),
-                }
-            )
+
+    def _deal_set(self) -> set[tuple[int, int]]:
+        return self.version.deal_set
 
     def _context(self, role: str, **extra: Any) -> dict[str, Any]:
         return {
             "role": role,
             "version": self.version.name,
             "info": self.version.info,
-            "high_pain_tolerance": self.version.lag_bonus > LEAD_BONUS,
-            "high_risk": role in self.version.high_risk_roles,
             "stayin_bonus": self.version.stayin_bonus,
             "timestep": self.timestep,
             "n_timesteps": self.n,
             "is_last_timestep": self.timestep == self.n - 1,
             "visible": visible_payoffs(self.version, self.timestep),
             "public_history": list(self.public_history),
-            "deal_grid": [list(d) for d in DEAL_GRID],
-            "allow_pause": self.version.allow_pause,
+            "deal_grid": [list(d) for d in self.version.deal_grid],
             **extra,
         }
 
@@ -368,7 +334,7 @@ class InteractiveGame:
             self._finish(deal["lead"], deal["lag"], "deal", extra={"deal": deal})
             return
         if action == "counter" and self.can_counter:
-            new_deal = normalize_deal(reply.get("deal"))
+            new_deal = normalize_deal(reply.get("deal"), self._deal_set())
             if new_deal is None:
                 self._record_timestep("negotiation_invalid_counter")
                 self.thread.append(
@@ -422,6 +388,8 @@ class InteractiveGame:
         lead_action = lead_move.get("action")
         lag_action = lag_move.get("action")
         lead_pen, lag_pen = self.steps[self.timestep]
+        bonus = self.version.first_strike_bonus
+        destruction = self.version.destruction_penalty
 
         if lead_action == "first_strike" or lag_action == "first_strike":
             self.thread.append(
@@ -451,29 +419,31 @@ class InteractiveGame:
             if lead_action == "first_strike":
                 self._record_timestep("first_strike_lead")
                 self._finish(
-                    first_strike_payoff(LEAD_BONUS, lead_pen),
-                    VICTIM_SCORE,
+                    first_strike_payoff(bonus, lead_pen),
+                    destruction,
                     "first_strike_lead",
                     extra={"striker": "lead"},
                 )
                 return
             self._record_timestep("first_strike_lag")
             self._finish(
-                VICTIM_SCORE,
-                first_strike_payoff(self.version.lag_bonus, lag_pen),
+                destruction,
+                first_strike_payoff(bonus, lag_pen),
                 "first_strike_lag",
                 extra={"striker": "lag"},
             )
             return
 
-        if not self.version.allow_pause:
-            if lead_action == "offer_pause":
-                lead_action = "pass"
-            if lag_action == "offer_pause":
-                lag_action = "pass"
-
-        lead_deal = normalize_deal(lead_move.get("deal")) if lead_action == "offer_pause" else None
-        lag_deal = normalize_deal(lag_move.get("deal")) if lag_action == "offer_pause" else None
+        lead_deal = (
+            normalize_deal(lead_move.get("deal"), self._deal_set())
+            if lead_action == "offer_pause"
+            else None
+        )
+        lag_deal = (
+            normalize_deal(lag_move.get("deal"), self._deal_set())
+            if lag_action == "offer_pause"
+            else None
+        )
         if lead_action == "offer_pause" and lead_deal is None:
             lead_action = "pass"
         if lag_action == "offer_pause" and lag_deal is None:
@@ -502,7 +472,7 @@ class InteractiveGame:
         if self.phase == "done":
             raise ValueError("The game is already over.")
         if self.phase == "action":
-            move = validate_move("action", raw, allow_pause=self.version.allow_pause)
+            move = validate_move("action", raw, deal_set=self._deal_set())
             if move is None:
                 raise ValueError("That is not a valid action for this timestep.")
             human_move = _clean_move(move)
@@ -519,8 +489,8 @@ class InteractiveGame:
         move = validate_move(
             "negotiate",
             raw,
-            allow_pause=self.version.allow_pause,
             can_counter=self.can_counter,
+            deal_set=self._deal_set(),
         )
         if move is None:
             allowed = "accept, counter, or reject" if self.can_counter else "accept or reject"
@@ -546,14 +516,13 @@ class InteractiveGame:
             "n_timesteps": self.n,
             "last_timestep": self.n - 1,
             "visible": visible,
-            "allow_pause": self.version.allow_pause,
             "can_counter": self.can_counter,
             "offered_deal": self.offered_deal,
             "offered_by": self.offered_by,
             "offered_by_label": self._label(self.offered_by) if self.offered_by else None,
             "offer_message": self.offer_message,
             "negotiation_round": self.negotiation_round,
-            "deal_grid": [list(d) for d in DEAL_GRID],
+            "deal_grid": [list(d) for d in self.version.deal_grid],
             "prompt": self.prompt,
             "thread": list(self.thread),
             "public_history": list(self.public_history),

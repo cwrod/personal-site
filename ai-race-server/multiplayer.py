@@ -6,14 +6,13 @@ from typing import Any
 
 from game import (
     DEAL_GRID,
-    LEAD_BONUS,
     TRAJECTORIES,
-    VERSIONS,
-    VICTIM_SCORE,
+    VERSION_BY_NAME,
     Version,
     _public_action,
     apply_stayin,
     first_strike_payoff,
+    make_deal_grid,
     normalize_deal,
     validate_move,
     visible_payoffs,
@@ -22,30 +21,72 @@ from interactive import _clean_move, _outcome_text, version_meta
 
 
 def play_setup_payload() -> dict[str, Any]:
+    order = [
+        "convergent_current",
+        "convergent_future",
+        "divergent_current",
+        "divergent_future",
+        "static_current",
+        "static_future",
+    ]
+    versions = [version_meta(VERSION_BY_NAME[name]) for name in order]
+    versions.append(
+        {
+            "name": "random",
+            "label": "Random",
+            "trajectory": "random",
+            "info": "current",
+            "first_strike_bonus": 5,
+            "destruction_penalty": -100,
+            "concession_ratio": 5,
+            "stayin_bonus": 1,
+            "hidden": True,
+            "blurb": "One of Convergent, Divergent, or Static, chosen at random. The type is hidden.",
+            "notes": [
+                "Race type is hidden. Only payoffs from the start through the current timestep are visible."
+            ],
+            "kind": "random",
+        }
+    )
+    versions.append(
+        {
+            "name": "custom",
+            "label": "Custom",
+            "trajectory": "custom",
+            "info": "current",
+            "first_strike_bonus": 5,
+            "destruction_penalty": -100,
+            "concession_ratio": 5,
+            "stayin_bonus": 1,
+            "hidden": False,
+            "blurb": "Set the number of turns, parameters, and per-turn second-strike penalties.",
+            "notes": ["Opens a setup modal before the room is created."],
+            "kind": "custom",
+        }
+    )
     return {
-        "versions": [version_meta(v) for v in VERSIONS],
+        "versions": versions,
         "deal_grid": [list(d) for d in DEAL_GRID],
+        "presets": {name: [list(p) for p in path] for name, path in TRAJECTORIES.items()},
+        "defaults": {
+            "turns": 10,
+            "first_strike_bonus": 5,
+            "destruction_penalty": -100,
+            "stayin_bonus": 1,
+            "concession_ratio": 5,
+            "info": "current",
+            "deal_grid": [list(d) for d in make_deal_grid(5, 5)],
+        },
     }
 
 
 class TwoPlayerGame:
     def __init__(self, version: Version):
         self.version = version
-        self.steps = TRAJECTORIES[version.trajectory]
+        self.steps = version.steps
         self.n = len(self.steps)
-        self.timestep = version.start_timestep
-        passed = {"action": "pass", "deal": None, "message": ""}
-        self.public_history: list[dict[str, Any]] = [
-            {
-                "timestep": t,
-                "lead": passed,
-                "lag": passed,
-                "negotiation": [],
-                "resolution": "pass",
-                "preloaded": True,
-            }
-            for t in range(version.start_timestep)
-        ]
+        self.timestep = 0
+        self.public_history: list[dict[str, Any]] = []
         self.events: list[dict[str, Any]] = []
         self.phase = "action"
         self.can_counter = True
@@ -60,16 +101,9 @@ class TwoPlayerGame:
         self.pending: dict[str, dict[str, Any] | None] = {"lead": None, "lag": None}
         self.thread: list[dict[str, Any]] = []
         self.result: dict[str, Any] | None = None
-        if version.start_timestep:
-            self.thread.append(
-                {
-                    "kind": "note",
-                    "text": (
-                        f"The first {version.start_timestep} timestep(s) already elapsed. "
-                        "Both players passed on those turns."
-                    ),
-                }
-            )
+
+    def _deal_set(self) -> set[tuple[int, int]]:
+        return self.version.deal_set
 
     def waiting_for(self) -> list[str]:
         if self.phase == "done":
@@ -234,7 +268,7 @@ class TwoPlayerGame:
             self._finish(deal["lead"], deal["lag"], "deal", extra={"deal": deal})
             return
         if action == "counter" and self.can_counter:
-            new_deal = normalize_deal(reply.get("deal"))
+            new_deal = normalize_deal(reply.get("deal"), self._deal_set())
             if new_deal is None:
                 self._record_timestep("negotiation_invalid_counter")
                 self.thread.append(
@@ -282,6 +316,8 @@ class TwoPlayerGame:
         lead_action = lead_move.get("action")
         lag_action = lag_move.get("action")
         lead_pen, lag_pen = self.steps[self.timestep]
+        bonus = self.version.first_strike_bonus
+        destruction = self.version.destruction_penalty
 
         if lead_action == "first_strike" or lag_action == "first_strike":
             for role, move in (("lead", lead_move), ("lag", lag_move)):
@@ -298,29 +334,31 @@ class TwoPlayerGame:
             if lead_action == "first_strike":
                 self._record_timestep("first_strike_lead")
                 self._finish(
-                    first_strike_payoff(LEAD_BONUS, lead_pen),
-                    VICTIM_SCORE,
+                    first_strike_payoff(bonus, lead_pen),
+                    destruction,
                     "first_strike_lead",
                     extra={"striker": "lead"},
                 )
                 return
             self._record_timestep("first_strike_lag")
             self._finish(
-                VICTIM_SCORE,
-                first_strike_payoff(self.version.lag_bonus, lag_pen),
+                destruction,
+                first_strike_payoff(bonus, lag_pen),
                 "first_strike_lag",
                 extra={"striker": "lag"},
             )
             return
 
-        if not self.version.allow_pause:
-            if lead_action == "offer_pause":
-                lead_action = "pass"
-            if lag_action == "offer_pause":
-                lag_action = "pass"
-
-        lead_deal = normalize_deal(lead_move.get("deal")) if lead_action == "offer_pause" else None
-        lag_deal = normalize_deal(lag_move.get("deal")) if lag_action == "offer_pause" else None
+        lead_deal = (
+            normalize_deal(lead_move.get("deal"), self._deal_set())
+            if lead_action == "offer_pause"
+            else None
+        )
+        lag_deal = (
+            normalize_deal(lag_move.get("deal"), self._deal_set())
+            if lag_action == "offer_pause"
+            else None
+        )
         if lead_action == "offer_pause" and lead_deal is None:
             lead_action = "pass"
         if lag_action == "offer_pause" and lag_deal is None:
@@ -351,7 +389,7 @@ class TwoPlayerGame:
         if self.phase == "action":
             if self.pending[role] is not None:
                 raise ValueError("You already locked in this timestep.")
-            move = validate_move("action", raw, allow_pause=self.version.allow_pause)
+            move = validate_move("action", raw, deal_set=self._deal_set())
             if move is None:
                 raise ValueError("That is not a valid action for this timestep.")
             self.pending[role] = _clean_move(move)
@@ -366,8 +404,8 @@ class TwoPlayerGame:
         move = validate_move(
             "negotiate",
             raw,
-            allow_pause=self.version.allow_pause,
             can_counter=self.can_counter,
+            deal_set=self._deal_set(),
         )
         if move is None:
             allowed = "accept, counter, or reject" if self.can_counter else "accept or reject"
@@ -405,14 +443,13 @@ class TwoPlayerGame:
             "n_timesteps": self.n,
             "last_timestep": self.n - 1,
             "visible": visible,
-            "allow_pause": self.version.allow_pause,
             "can_counter": self.can_counter,
             "offered_deal": self.offered_deal,
             "offered_by": self.offered_by,
             "offered_by_label": self._role_label(self.offered_by, role),
             "offer_message": self.offer_message,
             "negotiation_round": self.negotiation_round,
-            "deal_grid": [list(d) for d in DEAL_GRID],
+            "deal_grid": [list(d) for d in self.version.deal_grid],
             "prompt": prompt,
             "thread": thread,
             "public_history": list(self.public_history),
